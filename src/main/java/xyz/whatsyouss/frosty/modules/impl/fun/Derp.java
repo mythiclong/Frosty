@@ -24,7 +24,7 @@ public class Derp extends Module {
     public Derp() {
         super("Derp", category.Fun);
 
-        this.registerSetting(speed = new SliderSetting("Speed", 1, 0, 7, 1));
+        this.registerSetting(speed = new SliderSetting("Speed", 3, 1, 7, 1));
         this.registerSetting(direction = new SelectSetting("Direction", 2, dir));
     }
 
@@ -79,6 +79,6 @@ public class Derp extends Module {
         targetYaw %= 360.0F;
 
         float smoothness = 1.0f;
-        Rotations.setSmoothRotate(this, targetYaw, mc.player.getXRot(), 10, smoothness);
+        Rotations.setRotate(this, targetYaw, mc.player.getXRot(), 10, smoothness);
     }
 }

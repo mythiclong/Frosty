@@ -97,6 +97,7 @@ public class ModuleManager {
     public static ChatCopier chatCopier;
     public static Eagle eagle;
     public static Blink blink;
+    public static DojoHelper dojoHelper;
 
     public void register() {
         this.addModule(tps = new TPS());
@@ -164,6 +165,7 @@ public class ModuleManager {
         this.addModule(chatCopier = new ChatCopier());
         this.addModule(eagle = new Eagle());
         this.addModule(blink = new Blink());
+        this.addModule(dojoHelper = new DojoHelper());
         modules.sort(Comparator.comparing(Module::getName));
     }
 

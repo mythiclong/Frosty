@@ -2,6 +2,7 @@ package xyz.whatsyouss.frosty.utility;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.phys.BlockHitResult;
@@ -14,45 +15,29 @@ public class RotationUtils {
 
     private static final Minecraft mc = Minecraft.getInstance();
 
-    public static void setYawTo(float targetYaw) {
-        mc.player.setYRot(targetYaw);
+    private static float getGCDFixedRotation(float targetRotation, float currentRotation) {
+        if (mc.options == null || mc.player == null) return targetRotation;
+        float sensitivity = mc.options.sensitivity().get().floatValue();
+        float f = sensitivity * 0.6F + 0.2F;
+        float gcd = f * f * f * 8.0F * 0.15F;
+
+        float delta = Mth.wrapDegrees(targetRotation - currentRotation);
+        int pixels = Math.round(delta / gcd);
+        return currentRotation + (pixels * gcd);
     }
 
     public static void setYawTo(float targetYaw, float smoothness) {
         float currentYaw = mc.player.getYRot();
         float delta = wrapDegrees(targetYaw - currentYaw);
-        mc.player.setYRot(currentYaw + delta / smoothness);
-    }
-
-    public static void setPitchTo(float targetPitch) {
-        mc.player.setXRot(targetPitch);
+        float nextYaw = currentYaw + delta / smoothness;
+        mc.player.setYRot(getGCDFixedRotation(nextYaw, currentYaw));
     }
 
     public static void setPitchTo(float targetPitch, float smoothness) {
         float currentPitch = mc.player.getXRot();
         float delta = wrapDegrees(targetPitch - currentPitch);
-        mc.player.setXRot(currentPitch + delta / smoothness);
-    }
-
-    public static void aim(LocalPlayer target) {
-        if (mc.player != null && target != null) {
-            Vec3 targetPos = target.position().add(0, target.getBbHeight() / 2.0, 0);
-            Vec3 playerPos = mc.player.getEyePosition();
-
-            float[] angles = getYawPitchTo(playerPos, targetPos);
-            setYawTo(angles[0]);
-            setPitchTo(angles[1]);
-        }
-    }
-
-    public static void aimByPos(Vec3 pos) {
-        if (mc.player != null && pos != null) {
-            Vec3 playerPos = mc.player.getEyePosition();
-
-            float[] angles = getYawPitchTo(playerPos, pos);
-            setYawTo(angles[0]);
-            setPitchTo(angles[1]);
-        }
+        float nextPitch = currentPitch + delta / smoothness;
+        mc.player.setXRot(getGCDFixedRotation(nextPitch, currentPitch));
     }
 
     public static void aim(LocalPlayer target, float smoothness) {

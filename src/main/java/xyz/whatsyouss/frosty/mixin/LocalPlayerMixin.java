@@ -37,7 +37,7 @@ public abstract class LocalPlayerMixin extends net.minecraft.client.player.Abstr
     )
     private float hookSilentRotationYaw(float original) {
         if (Rotations.rotating) {
-            return Rotations.serverYaw;
+            return Rotations.lastServerYaw = Rotations.serverYaw;
         }
         return original;
     }
@@ -48,6 +48,7 @@ public abstract class LocalPlayerMixin extends net.minecraft.client.player.Abstr
     )
     private float hookSilentRotationPitch(float original) {
         if (Rotations.rotating) {
+            Rotations.lastServerPitch = Rotations.serverPitch;
             return Rotations.serverPitch;
         }
         return original;
@@ -64,9 +65,6 @@ public abstract class LocalPlayerMixin extends net.minecraft.client.player.Abstr
                 this.onGround(), this.isSprinting(), this.isCrouching()
         );
         Frosty.EVENT_BUS.post(preMotionEvent);
-
-        Rotations.lastServerYaw = preMotionEvent.getYaw();
-        Rotations.lastServerPitch = preMotionEvent.getPitch();
     }
 
     @Inject(method = "sendPosition", at = @At("TAIL"))

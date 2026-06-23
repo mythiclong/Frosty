@@ -1,7 +1,6 @@
 package xyz.whatsyouss.frosty.utility;
 
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import xyz.whatsyouss.frosty.events.impl.*;
@@ -10,13 +9,16 @@ import xyz.whatsyouss.frosty.modules.impl.other.MoveFix;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+
+import static xyz.whatsyouss.frosty.Frosty.mc;
 
 public class Rotations {
 
-    public static float serverYaw, lastServerYaw;
-    public static float serverPitch, lastServerPitch;
+    public static float serverYaw;
+    public static float serverPitch;
+    public static float lastServerYaw;
+    public static float lastServerPitch;
     public static float preYaw;
     public static float prePitch;
 
@@ -30,6 +32,9 @@ public class Rotations {
     private static float targetPitch;
     private static float smoothFactor;
     private static float smoothProgress;
+    private static float smoothStartYaw;
+    private static float smoothStartPitch;
+    private static int lastRotationUpdateTick = -1;
 
     private static class RotationRequest {
         public final float yaw;
@@ -50,23 +55,20 @@ public class Rotations {
     public Rotations() {
     }
 
-    public static void setRotate(Module module, float yaw, float pitch, int priority) {
+    public static void setRotate(Module module, float yaw, float pitch, int priority, float smooth) {
         if (module == null || !module.isEnabled()) {
             return;
         }
-        rotationRequests.put(module, new RotationRequest(yaw, pitch, priority, false, 0));
-        updateRotation();
-    }
-
-    public static void setSmoothRotate(Module module, float yaw, float pitch, int priority, float smooth) {
-        if (module == null || !module.isEnabled()) {
-            return;
-        }
+        RotationRequest previous = rotationRequests.get(module);
         rotationRequests.put(module, new RotationRequest(yaw, pitch, priority, true, smooth));
-        updateRotation();
+        updateRotation(previous == null || previous.priority != priority || !previous.smooth);
     }
 
     private static void updateRotation() {
+        updateRotation(true);
+    }
+
+    private static void updateRotation(boolean resetSmooth) {
         if (rotationRequests.isEmpty()) {
             cancelRotate();
             return;
@@ -83,13 +85,27 @@ public class Rotations {
         }
 
         if (highestPriorityRequest != null) {
+            boolean ownerChanged = currentRotationOwner != highestPriorityModule;
+            boolean completedTargetChanged = smoothRotating
+                    && smoothProgress >= 1.0f
+                    && (Math.abs(Mth.wrapDegrees(highestPriorityRequest.yaw - targetYaw)) > 0.1f
+                    || Math.abs(highestPriorityRequest.pitch - targetPitch) > 0.1f);
             currentRotationOwner = highestPriorityModule;
 
             if (highestPriorityRequest.smooth) {
                 targetYaw = highestPriorityRequest.yaw;
                 targetPitch = highestPriorityRequest.pitch;
                 smoothFactor = Math.max(0.01f, highestPriorityRequest.smoothFactor);
-                smoothProgress = 0f;
+                if (resetSmooth || !smoothRotating || ownerChanged || completedTargetChanged) {
+                    boolean wasRotating = rotating;
+                    smoothProgress = 0f;
+                    smoothStartYaw = rotating ? serverYaw : mc.player.getYRot();
+                    smoothStartPitch = rotating ? serverPitch : mc.player.getXRot();
+                    if (!wasRotating) {
+                        serverYaw = smoothStartYaw;
+                        serverPitch = smoothStartPitch;
+                    }
+                }
                 smoothRotating = true;
                 rotating = true;
             } else {
@@ -111,7 +127,7 @@ public class Rotations {
         if (rotationRequests.isEmpty()) {
             cancelRotate();
         } else {
-            updateRotation();
+            updateRotation(true);
         }
     }
 
@@ -120,6 +136,8 @@ public class Rotations {
         currentRotationOwner = null;
         rotating = false;
         smoothRotating = false;
+        smoothProgress = 0f;
+        lastRotationUpdateTick = -1;
         if (packetSent) {
             packetSent = false;
         }
@@ -142,31 +160,63 @@ public class Rotations {
         }
     }
 
+    private static float getServerGCDFixedRotation(float targetRotation, float currentRotation) {
+        if (mc.options == null) return targetRotation;
+        float sensitivity = mc.options.sensitivity().get().floatValue();
+        float f = sensitivity * 0.6F + 0.2F;
+        float gcd = f * f * f * 8.0F * 0.15F;
+
+        float delta = Mth.wrapDegrees(targetRotation - currentRotation);
+        int pixels = Math.round(delta / gcd);
+        return currentRotation + (pixels * gcd);
+    }
+
+    public static void updateServerRotation() {
+        if (!rotating || !smoothRotating || mc.player == null) {
+            return;
+        }
+
+        int tick = mc.player.tickCount;
+        if (lastRotationUpdateTick == tick) {
+            return;
+        }
+        lastRotationUpdateTick = tick;
+
+        float progressStep = 1.0f / Math.max(1.0f, smoothFactor);
+        smoothProgress += progressStep;
+        if (smoothProgress >= 1.0f) {
+            smoothProgress = 1.0f;
+            serverYaw = getServerGCDFixedRotation(targetYaw, serverYaw);
+            serverPitch = getServerGCDFixedRotation(targetPitch, serverPitch);
+            return;
+        }
+
+        float t = smoothProgress < 0.5f
+                ? 2.0f * smoothProgress * smoothProgress
+                : 1.0f - (float) Math.pow(-2.0f * smoothProgress + 2.0f, 2.0f) / 2.0f;
+
+        float lerpYaw = smoothStartYaw + Mth.wrapDegrees(targetYaw - smoothStartYaw) * t;
+        float lerpPitch = smoothStartPitch + (targetPitch - smoothStartPitch) * t;
+
+        serverYaw = getServerGCDFixedRotation(lerpYaw, serverYaw);
+        serverPitch = getServerGCDFixedRotation(lerpPitch, serverPitch);
+    }
+
     @EventHandler
     public void onPreMotion(PreMotionEvent e) {
         if (!rotating) {
             return;
         }
 
-        if (smoothRotating) {
-            smoothProgress += smoothFactor;
-            if (smoothProgress >= 1.0f) {
-                smoothProgress = 1.0f;
-                serverYaw = targetYaw;
-                serverPitch = targetPitch;
-            } else {
-                serverYaw = preYaw + (targetYaw - preYaw) * smoothProgress;
-                serverPitch = prePitch + (targetPitch - prePitch) * smoothProgress;
-            }
-        }
+        updateServerRotation();
 
         e.setYaw(serverYaw);
         e.setPitch(serverPitch);
     }
-
     @EventHandler
     public void onStrafe(StrafeEvent e) {
         if (MoveFix.shouldApply()) {
+            updateServerRotation();
             e.setYaw(serverYaw);
         }
     }
@@ -174,6 +224,7 @@ public class Rotations {
     @EventHandler
     public void onJump(JumpEvent e) {
         if (MoveFix.shouldApply()) {
+            updateServerRotation();
             e.setYaw(serverYaw);
         }
     }

@@ -34,9 +34,9 @@ public class WoodNuker extends Module {
     private int tickCounter = 0;
     private final int breakDelay = 2;
     private BlockPos currentTarget = null;
-    private long lastBreakTime;
-    private BlockPos lastTargetPos;
-    private boolean packetSent;
+
+    private Block lastTarget;
+    private boolean startPacketSent = false;
 
     public WoodNuker() {
         super("WoodNuker", category.Foraging);
@@ -53,13 +53,8 @@ public class WoodNuker extends Module {
 
     @Override
     public void onDisable() {
-        if (lastTargetPos != null) {
-            mc.player.connection.send(
-                    new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK,
-                            lastTargetPos, BlockUtils.getDirection(lastTargetPos)));
-        }
+        resetTarget();
         Rotations.cancelRotate(this);
-        packetSent = false;
     }
 
     @EventHandler
@@ -80,7 +75,6 @@ public class WoodNuker extends Module {
         if (tickCounter < breakDelay) return;
         tickCounter = 0;
 
-        // Check if current target is still valid
         if (currentTarget != null) {
             BlockState state = mc.level.getBlockState(currentTarget);
             boolean isStillTarget = (targetBlocks.contains(state.getBlock())) &&
@@ -88,14 +82,7 @@ public class WoodNuker extends Module {
                     !state.isAir();
 
             if (!isStillTarget) {
-                if (packetSent) {
-                    Direction dir = BlockUtils.getDirection(currentTarget);
-                    mc.player.connection.send(
-                            new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK,
-                                    currentTarget, dir));
-                    packetSent = false;
-                }
-                currentTarget = null;
+                resetTarget();
             }
         }
 
@@ -112,6 +99,7 @@ public class WoodNuker extends Module {
             Rotations.cancelRotate(this);
         }
     }
+
     @EventHandler
     public void onRender3D(Render3DEvent event) {
         if (!Utils.nullCheck()) {
@@ -169,46 +157,47 @@ public class WoodNuker extends Module {
     }
 
     private void breakBlock(BlockPos pos) {
-        if (mc.gameMode == null || mc.player == null) return;
+        if (!Utils.nullCheck()) return;
 
-        if (System.currentTimeMillis() - lastBreakTime < 50) {
+        Block currentBlock = mc.level.getBlockState(pos).getBlock();
+
+        if (aim.isToggled()) {
+            float[] a = RotationUtils.getYawPitchTo(mc.player.getEyePosition(), new Vec3(pos));
+            if (silent.isToggled()) {
+                Rotations.setRotate(this, a[0], a[1], 4, 2);
+            } else {
+                RotationUtils.aimByPos(new Vec3(pos), 2);
+            }
+        }
+
+        if (lastTarget != null && lastTarget != currentBlock) {
+            sendAction(ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK, pos);
+            lastTarget = currentBlock;
+            startPacketSent = false;
             return;
         }
 
-        if (lastTargetPos != null && !lastTargetPos.equals(pos)) {
-            packetSent = false;
-            mc.player.connection.send(
-                    new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK,
-                            lastTargetPos, BlockUtils.getDirection(lastTargetPos)));
-        }
-        lastTargetPos = pos;
-
-        float[] a = RotationUtils.getYawPitchTo(mc.player.getEyePosition(), new Vec3(pos));
-
-        if (aim.isToggled()) {
-            if (silent.isToggled()) {
-                Rotations.setRotate(this, a[0], a[1], 4);
-            } else {
-                RotationUtils.aimByPos(new Vec3(pos));
-            }
+        if (!startPacketSent) {
+            sendAction(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos);
+            startPacketSent = true;
         }
 
-        if (isGalateaWood(mc.level.getBlockState(pos))) {
-            if (!packetSent) {
-                mc.player.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK,
-                        pos, BlockUtils.getDirection(pos)));
-                packetSent = true;
-            }
-            mc.player.swing(InteractionHand.MAIN_HAND);
-        } else {
-            mc.player.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK,
-                    pos, BlockUtils.getDirection(pos)));
-            mc.player.swing(InteractionHand.MAIN_HAND);
-            mc.player.connection.send(
-                    new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, BlockUtils.getDirection(pos)));
-        }
+        lastTarget = currentBlock;
+        mc.player.swing(InteractionHand.MAIN_HAND);
+    }
 
-        lastBreakTime = System.currentTimeMillis();
+    private void sendAction(ServerboundPlayerActionPacket.Action action, BlockPos pos) {
+        mc.player.connection.send(
+                new ServerboundPlayerActionPacket(action, pos, BlockUtils.getDirection(pos)));
+    }
+
+    private void resetTarget() {
+        if (currentTarget != null && startPacketSent) {
+            sendAction(ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK, currentTarget);
+        }
+        currentTarget   = null;
+        lastTarget      = null;
+        startPacketSent = false;
     }
 
     @EventHandler
@@ -217,13 +206,6 @@ public class WoodNuker extends Module {
             targetBlocks.clear();
         }
         getTargetBlocks();
-    }
-
-    private boolean isGalateaWood(BlockState state) {
-        return state.getBlock() == Blocks.STRIPPED_SPRUCE_LOG ||
-                state.getBlock() == Blocks.STRIPPED_SPRUCE_WOOD ||
-                state.getBlock() == Blocks.MANGROVE_LOG ||
-                state.getBlock() == Blocks.MANGROVE_WOOD;
     }
 
     private void getTargetBlocks() {

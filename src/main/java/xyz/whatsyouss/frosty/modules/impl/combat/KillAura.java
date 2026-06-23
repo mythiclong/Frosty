@@ -104,7 +104,7 @@ public class KillAura extends Module {
 
             if (requirePress.isToggled() && !lcing) return;
             float[] angle = RotationUtils.getYawPitchTo(mc.player.getEyePosition(), currentTarget.getEyePosition());
-            Rotations.setRotate(this, angle[0], angle[1], 10);
+            Rotations.setRotate(this, angle[0], angle[1], 10, 2);
 
             handleAttack();
         } else {

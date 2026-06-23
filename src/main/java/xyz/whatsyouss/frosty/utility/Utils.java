@@ -375,7 +375,7 @@ public class Utils {
         if (string == null || string.isEmpty()) {
             return string;
         }
-        return string.replaceAll("§[0-9a-fk-or]", "");
+        return string.replaceAll("§.", "");
     }
 
     public static void unscaledProjection() {

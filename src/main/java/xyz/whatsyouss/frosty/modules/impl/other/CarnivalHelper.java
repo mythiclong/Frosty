@@ -438,11 +438,7 @@ public class CarnivalHelper extends Module {
         float targetYaw = rotations[0];
         float targetPitch = rotations[1];
 
-        if (rotateSmoothing.getInput() == 0) {
-            Rotations.setRotate(this, targetYaw, targetPitch, 3);
-        } else {
-            Rotations.setSmoothRotate(this, targetYaw, targetPitch, 3, (float) rotateSmoothing.getInput());
-        }
+        Rotations.setRotate(this, targetYaw, targetPitch, 3, (float) rotateSmoothing.getInput() + 1);
     }
 
     private void updateTargetData(Entity entity, long currentTick) {

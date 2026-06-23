@@ -2,6 +2,7 @@ package xyz.whatsyouss.frosty.modules.impl.render;
 
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.PlainTextContents;
 import xyz.whatsyouss.frosty.modules.Module;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
 import xyz.whatsyouss.frosty.settings.impl.InputSetting;
@@ -47,16 +48,15 @@ public class NickHider extends Module {
         if (text == null) {
             return Component.empty();
         }
-        MutableComponent result = Component.empty().setStyle(text.getStyle());
 
-        String content = text.getString();
-        Matcher matcher = NickHider.getUsernamePattern().matcher(content);
+        String ownContent = (text.getContents() instanceof PlainTextContents ptc) ? ptc.text() : "";
 
-        if (matcher.matches()) {
-            result.append(Component.literal(ModuleManager.nickHider.name.getValue())
-                    .setStyle(text.getStyle()));
+        MutableComponent result;
+        if (!ownContent.isEmpty() && getUsernamePattern().matcher(ownContent).matches()) {
+            result = Component.literal(ModuleManager.nickHider.name.getValue())
+                    .setStyle(text.getStyle());
         } else {
-            result.append(text.copy().setStyle(text.getStyle()));
+            result = Component.literal(ownContent).setStyle(text.getStyle());
         }
 
         for (Component sibling : text.getSiblings()) {

@@ -1,11 +1,8 @@
 package xyz.whatsyouss.frosty.modules.impl.render;
 
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.client.multiplayer.PlayerInfo;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import org.joml.Matrix3x2fStack;
-import org.joml.Matrix4f;
 import xyz.whatsyouss.frosty.events.impl.ReceivePacketEvent;
 import xyz.whatsyouss.frosty.events.impl.Render2DEvent;
 import xyz.whatsyouss.frosty.modules.Module;
@@ -14,7 +11,6 @@ import xyz.whatsyouss.frosty.utility.MathUtils;
 import xyz.whatsyouss.frosty.utility.Theme;
 import xyz.whatsyouss.frosty.utility.Utils;
 
-import java.awt.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayDeque;
@@ -22,17 +18,14 @@ import java.util.ArrayDeque;
 public class TPS extends Module {
 
     private SelectSetting color;
-
     private String[] colors = new String[] {"Rainbow", "Cherry", "Cotton candy", "Flare", "Flower", "Gold", "Grayscale", "Royal", "Sky", "Vine"};
 
-    private final ArrayDeque<Float> tpsResult = new ArrayDeque<>(20);
-    private long time;
-    private long tickTime;
-    private float tps, SCALE;
-    private int x, y, strColor;
+    private final ArrayDeque<Long> packetIntervals = new ArrayDeque<>(10);
+    private long lastPacketTime;
+    private int strColor;
+
     public TPS() {
         super("TPS", category.Render);
-
         this.registerSetting(color = new SelectSetting("Color", 0, colors));
     }
 
@@ -41,16 +34,13 @@ public class TPS extends Module {
         if (!Utils.nullCheck() || mc.gui.hud.isHidden()) {
             return;
         }
-        double autoScale = Math.max(1, Math.floor(mc.getWindow().getWidth() / 640.0));
-        SCALE = (float) (mc.options.guiScale().get().floatValue() > 0 ?
-                mc.options.guiScale().get().floatValue() : autoScale);
 
         Matrix3x2fStack matrices = event.drawContext.pose();
-
         matrices.pushMatrix();
-        x = 5;
-        y = mc.getWindow().getGuiScaledHeight() - 12;
-        event.drawContext.text(mc.font, "TPS: " + Math.round(getTPS()), x, y, strColor, true);
+        int x = 5;
+        int y = mc.getWindow().getGuiScaledHeight() - 12;
+
+        event.drawContext.text(mc.font, "TPS: " + getTPS(), x, y, strColor, true);
         matrices.popMatrix();
     }
 
@@ -60,42 +50,53 @@ public class TPS extends Module {
     }
 
     public float getTPS() {
-        return round2(tps);
-    }
+        if (packetIntervals.isEmpty()) {
+            return 20.0f;
+        }
 
-    public float getTPS2() {
-        return round2(20.0f * ((float) tickTime / 1000f));
-    }
+        long totalTimeMs = 0;
+        for (Long interval : packetIntervals) {
+            totalTimeMs += interval;
+        }
 
-    public float getTPSFactor() {
-        return (float) tickTime / 1000f;
-    }
+        long now = System.currentTimeMillis();
+        long timeSinceLastPacket = now - lastPacketTime;
 
-    public static float round2(double value) {
-        BigDecimal bd = new BigDecimal(value);
-        bd = bd.setScale(2, RoundingMode.HALF_UP);
-        return bd.floatValue();
+        if (lastPacketTime != 0L && timeSinceLastPacket > 1000L) {
+            totalTimeMs += (timeSinceLastPacket - 1000L);
+        }
+
+        float totalTicks = packetIntervals.size() * 20.0f;
+        float calculatedTps = totalTicks / ((float) totalTimeMs / 1000.0f);
+
+        return round2(MathUtils.clamp(calculatedTps, 0.0f, 20.0f));
     }
 
     @EventHandler
     public void onPacketReceive(ReceivePacketEvent event) {
         if (event.getPacket() instanceof ClientboundSetTimePacket) {
-            if (time != 0L) {
-                tickTime = System.currentTimeMillis() - time;
+            long now = System.currentTimeMillis();
 
-                if (tpsResult.size() > 20)
-                    tpsResult.poll();
+            if (lastPacketTime != 0L) {
+                long interval = now - lastPacketTime;
 
-                tpsResult.add(20.0f * (1000.0f / (float) (tickTime)));
+                if (interval < 50L) interval = 50L;
 
-                float average = 0.0f;
-
-                for (Float value : tpsResult) average += MathUtils.clamp(value, 0f, 20f);
-
-                tps = average / (float) tpsResult.size();
+                if (packetIntervals.size() >= 10) {
+                    packetIntervals.poll();
+                }
+                packetIntervals.add(interval);
             }
-            time = System.currentTimeMillis();
+
+            lastPacketTime = now;
         }
+    }
+
+    public static float round2(double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) return 0.0f;
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(2, RoundingMode.HALF_UP);
+        return bd.floatValue();
     }
 
     private int getCurrentColor() {

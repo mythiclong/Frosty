@@ -22,6 +22,8 @@ public abstract class KeyboardInputMixin extends ClientInputMixin {
     @Unique
     private DirectionalInput frosty$getCorrectedInput() {
         if (MoveFix.shouldApply() &&  mc.player != null) {
+            Rotations.updateServerRotation();
+
             DirectionalInput originalInput = new DirectionalInput(
                     this.options.keyUp.isDown(),
                     this.options.keyDown.isDown(),

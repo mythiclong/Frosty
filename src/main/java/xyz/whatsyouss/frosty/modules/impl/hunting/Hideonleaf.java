@@ -119,9 +119,9 @@ public class Hideonleaf extends Module {
             float[] angles = RotationUtils.getYawPitchTo(mc.player.getEyePosition(), shulkerPos);
 
             if (!silent.isToggled()) {
-                RotationUtils.aimByPos(shulkerPos);
+                RotationUtils.aimByPos(shulkerPos, 2);
             } else {
-                Rotations.setRotate(this, angles[0], angles[1], 5);
+                Rotations.setRotate(this, angles[0], angles[1], 5, 2);
             }
 
             if (mc.player.getItemInHand(InteractionHand.MAIN_HAND).getCustomName() != null && Utils.getFirstLiteral(mc.player.getItemInHand(InteractionHand.MAIN_HAND).getCustomName().toString()).contains("Fishing Net")) {
