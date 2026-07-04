@@ -32,7 +32,7 @@ public class AutoHarp extends Module {
 
         this.registerSetting(mode = new SelectSetting("Mode", 0, modes));
         this.registerSetting(delay = new SliderSetting("Delay", "ms", 225, 100, 500, 25));
-        this.registerSetting(doubleClickDelay = new SliderSetting("Double click delay", "ms", 350, 200, 500, 25));
+        this.registerSetting(doubleClickDelay = new SliderSetting("Double click delay", "ms", 350, 100, 500, 25));
     }
 
     @Override
@@ -77,34 +77,28 @@ public class AutoHarp extends Module {
 
             if (clickTime == -1) {
                 if (mode.getValue() == 0) {
-                    int currentWoolSlot = -1;
-                    boolean isDoubleNote = false;
                     int foundQuartzSlot = -1;
+                    boolean isDoubleNote = false;
 
                     for (int i = 37; i <= 43; i++) {
                         ItemStack itemStack = menu.getSlot(i).getItem();
                         if (itemStack.getItem() == Blocks.QUARTZ_BLOCK.asItem()) {
+                            foundQuartzSlot = i;
+
                             int upperSlot = i - 9;
                             ItemStack upperStack = menu.getSlot(upperSlot).getItem();
-
                             if (isWool(upperStack)) {
-                                currentWoolSlot = upperSlot;
-                                foundQuartzSlot = i;
-
-                                ItemStack higherStack = menu.getSlot(upperSlot - 9).getItem();
-                                if (isWool(higherStack)) {
-                                    isDoubleNote = true;
-                                }
-                                break;
+                                isDoubleNote = true;
                             }
+                            break;
                         }
                     }
 
-                    if (currentWoolSlot != -1) {
-                        if (currentWoolSlot != lastWoolSlot) {
+                    if (foundQuartzSlot != -1) {
+                        if (foundQuartzSlot != lastWoolSlot) {
                             this.targetSlot = foundQuartzSlot;
                             this.clickTime = System.currentTimeMillis();
-                            this.lastWoolSlot = currentWoolSlot;
+                            this.lastWoolSlot = foundQuartzSlot;
 
                             if (isDoubleNote) {
                                 this.triggerDoubleClick = true;

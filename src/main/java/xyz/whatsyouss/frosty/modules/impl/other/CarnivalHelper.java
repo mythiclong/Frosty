@@ -31,18 +31,14 @@ public class CarnivalHelper extends Module {
     private ButtonSetting autoFruitDigging;
     private SliderSetting fishLatency, zombieShootoutLatency, rotateSmoothing;
 
-    // 0=None, 1=Fruit Digging, 2=Catch A Fish, 3=Zombie Shootout
     private int currentPlay;
 
-    // Fruit Digging
     private BlockPos fdCurrentTarget;
     private Map<BlockPos, Integer> fdBombInfoMap = new HashMap<>();
-    // 1=no bomb, 2=may bomb, 3=bomb
     private Map<BlockPos, Integer> fdBlockStates = new HashMap<>();
     private int fdShovelSlot = -1;
     private static final Pattern BOMB_PATTERN = Pattern.compile("MINES! There (?:are|is) (\\d+) bombs? hidden");
 
-    // Zombie Shootout
     private int zsStickSlot = -1;
     private final List<BlockPos> zsLampPos = List.of(
             new BlockPos(-96, 76, 61),
@@ -59,7 +55,6 @@ public class CarnivalHelper extends Module {
             new BlockPos(-118, 76, 39)
     );
 
-    // Catch A Fish
     private int cfRodSlot = -1;
     private boolean isCast = false;
     private boolean reeling = false;
@@ -388,7 +383,16 @@ public class CarnivalHelper extends Module {
                     if (data != null && data.hasPos2) {
                         Vec3 movement = data.pos2.subtract(data.pos1);
                         double latencyFactor = zombieShootoutLatency.getInput() / 100.0;
-                        Vec3 offset = movement.multiply(latencyFactor, latencyFactor, latencyFactor);
+
+                        double smoothCompensation = rotateSmoothing.getInput() > 0
+                                ? 1.0 + (rotateSmoothing.getInput() / 10.0)
+                                : 1.0;
+
+                        Vec3 offset = movement.multiply(
+                                latencyFactor * smoothCompensation,
+                                latencyFactor * smoothCompensation,
+                                latencyFactor * smoothCompensation
+                        );
                         targetAimPos = data.pos2.add(offset);
                     } else {
                         currentTarget = null;
@@ -438,7 +442,7 @@ public class CarnivalHelper extends Module {
         float targetYaw = rotations[0];
         float targetPitch = rotations[1];
 
-        Rotations.setRotate(this, targetYaw, targetPitch, 3, (float) rotateSmoothing.getInput() + 1);
+        Rotations.setRotate(this, targetYaw, targetPitch, 3, (float) rotateSmoothing.getInput());
     }
 
     private void updateTargetData(Entity entity, long currentTick) {

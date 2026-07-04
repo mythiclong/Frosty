@@ -61,8 +61,9 @@ public class Rotations {
         if (module == null || !module.isEnabled()) {
             return;
         }
+        boolean useSmooth = smooth > 0f;
         RotationRequest previous = rotationRequests.get(module);
-        rotationRequests.put(module, new RotationRequest(yaw, pitch, priority, true, smooth));
+        rotationRequests.put(module, new RotationRequest(yaw, pitch, priority, useSmooth, smooth));
         updateRotation(previous == null || previous.priority != priority || !previous.smooth);
     }
 

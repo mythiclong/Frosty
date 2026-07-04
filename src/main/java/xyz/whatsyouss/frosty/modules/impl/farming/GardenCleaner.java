@@ -8,12 +8,10 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import xyz.whatsyouss.frosty.events.impl.Render3DEvent;
 import xyz.whatsyouss.frosty.modules.Module;
-import xyz.whatsyouss.frosty.settings.impl.SelectSetting;
-import xyz.whatsyouss.frosty.settings.impl.SliderSetting;
+import xyz.whatsyouss.frosty.settings.impl.*;
 import xyz.whatsyouss.frosty.utility.BlockUtils;
 import xyz.whatsyouss.frosty.utility.MathUtils;
 import xyz.whatsyouss.frosty.utility.RenderUtils;
@@ -27,12 +25,14 @@ public class GardenCleaner extends Module {
 
     private SelectSetting mode;
     private SliderSetting bps;
+    private ButtonSetting spruce;
 
     private String[] modes = new String[]{"Normal", "Instant"};
 
     private final int radius = 5;
     private final List<Item> PICKAXES = List.of(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.GOLDEN_PICKAXE, Items.DIAMOND_PICKAXE);
     private final List<Block> WOOD_LOGS = List.of(Blocks.OAK_LOG, Blocks.BIRCH_LOG, Blocks.OAK_WOOD, Blocks.BIRCH_WOOD);
+    private final List<Block> SPRUCE_TARGETS = List.of(Blocks.SPRUCE_SLAB, Blocks.SPRUCE_STAIRS, Blocks.SPRUCE_PLANKS);
     private final List<Block> DIGGABLES = List.of(Blocks.GRASS_BLOCK, Blocks.DIRT);
     private final List<Block> STONE_TARGETS = List.of(Blocks.STONE);
     private final List<Block> OTHER_TARGETS = List.of(Blocks.OAK_LEAVES, Blocks.BIRCH_LEAVES, Blocks.SHORT_GRASS, Blocks.TALL_GRASS, Blocks.DANDELION, Blocks.POPPY, Blocks.AZURE_BLUET);
@@ -45,6 +45,7 @@ public class GardenCleaner extends Module {
 
         this.registerSetting(mode = new SelectSetting("Mode", 1, modes));
         this.registerSetting(bps = new SliderSetting("BPS", 10 ,1, 15, 1));
+        this.registerSetting(spruce = new ButtonSetting("Spruce", false));
     }
 
     @Override
@@ -84,7 +85,9 @@ public class GardenCleaner extends Module {
                     if (state.isAir()) continue;
 
                     if (handItem instanceof AxeItem) {
-                        if (WOOD_LOGS.contains(block)) targets.add(pos);
+                        if (WOOD_LOGS.contains(block) || (SPRUCE_TARGETS.contains(block) && spruce.isToggled())) {
+                            targets.add(pos);
+                        }
                     }
                     else if (handItem instanceof ShovelItem) {
                         if (DIGGABLES.contains(block) && pos.getY() > 70) {
@@ -115,7 +118,8 @@ public class GardenCleaner extends Module {
         if (instantTickCounter >= currentRequiredTicks) {
             instantTickCounter = 0;
 
-            if (!Utils.stripColor(Utils.getScoreboardSidebarLines().toString().toLowerCase()).contains("cleanup")) {
+            String sidebar = Utils.stripColor(Utils.getScoreboardSidebarLines().toString().toLowerCase());
+            if ((!sidebar.contains("cleanup") && !spruce.isToggled()) || !sidebar.contains("plot")) {
                 currentTarget = null;
                 return;
             }

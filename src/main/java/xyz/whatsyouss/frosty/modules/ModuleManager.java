@@ -100,6 +100,8 @@ public class ModuleManager {
     public static DojoHelper dojoHelper;
     public static AutoHarp autoHarp;
     public static ScrollableTooltips scrollableTooltips;
+//    public static ShowArmorStand showArmorStand;
+    public static AutoGift autoGift;
 
     public void register() {
         this.addModule(tps = new TPS());
@@ -170,6 +172,8 @@ public class ModuleManager {
         this.addModule(dojoHelper = new DojoHelper());
         this.addModule(autoHarp = new AutoHarp());
         this.addModule(scrollableTooltips = new ScrollableTooltips());
+//        this.addModule(showArmorStand = new ShowArmorStand());
+        this.addModule(autoGift = new AutoGift());
         modules.sort(Comparator.comparing(Module::getName));
     }
 

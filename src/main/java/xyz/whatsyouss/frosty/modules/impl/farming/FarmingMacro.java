@@ -61,7 +61,7 @@ public class FarmingMacro extends Module {
         super("FarmingMacro", "农业宏", category.Farming);
 
         this.registerSetting(face = new SelectSetting("Face", 0, FACES));
-        this.registerSetting(pitch = new SliderSetting("Pitch", 0, -10, 10, 1));
+        this.registerSetting(pitch = new SliderSetting("Pitch", 0, -90, 90, 1));
         this.registerSetting(stopTime = new SliderSetting("Stop time", 500, 100, 6000, 50));
         this.registerSetting(rotateOnFinish = new ButtonSetting("Rotate on finish", false));
         this.registerSetting(pestCleaner = new ButtonSetting("Pest cleaner", true));
@@ -122,6 +122,7 @@ public class FarmingMacro extends Module {
         }
         mc.player.getInventory().setSelectedSlot(hoeSlot);
 
+        FarmingProtector.stopped = false;
         lapCount = 0;
         targetIndex = Math.min(startIndex + 1, waypoints.size() - 1);
         dwellTicks = 0;
@@ -134,8 +135,9 @@ public class FarmingMacro extends Module {
         awaitingGrab = true;
 
         releaseAll();
+        prepareMouseForMacroStart();
 
-        if (pestCleaner.isToggled() && rewarpOnly.isToggled() && checkAliveThreshold()) {
+        if (pestCleaner.isToggled() && rewarpOnly.isToggled() && checkAliveThreshold() && startIndex == 0) {
             pauseForPestClean();
             return;
         }
@@ -169,7 +171,7 @@ public class FarmingMacro extends Module {
         }
         if (!mc.mouseHandler.isMouseGrabbed()) {
             if (mc.gui.screen() == null) {
-                mc.mouseHandler.grabMouse();
+                prepareMouseForMacroStart();
                 setKeyPressed(mc.options.keyAttack, true);
             } else {
                 setKeyPressed(mc.options.keyAttack, false);
@@ -536,6 +538,23 @@ public class FarmingMacro extends Module {
 
     private void setKeyPressed(KeyMapping key, boolean pressed) {
         key.setDown(pressed);
+    }
+
+    private void prepareMouseForMacroStart() {
+        if (mc.gui.screen() != null) return;
+
+        boolean restoreUngrab = ModuleManager.ungrabMouse != null && ModuleManager.ungrabMouse.isEnabled();
+        if (restoreUngrab) {
+            ModuleManager.ungrabMouse.disable();
+        }
+
+        if (!mc.mouseHandler.isMouseGrabbed()) {
+            mc.mouseHandler.grabMouse();
+        }
+
+        if (restoreUngrab) {
+            ModuleManager.ungrabMouse.enable();
+        }
     }
 
     @EventHandler
