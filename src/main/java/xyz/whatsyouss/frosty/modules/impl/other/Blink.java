@@ -2,7 +2,8 @@ package xyz.whatsyouss.frosty.modules.impl.other;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.*;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import xyz.whatsyouss.frosty.events.impl.PreUpdateEvent;
@@ -23,7 +24,7 @@ public class Blink extends Module {
     private SliderSetting maxTime, releaseTimer;
     private ButtonSetting renderServerPos;
 
-    private record QueuedPacket(ServerboundMovePlayerPacket packet, Vec3 capturedPos) {}
+    private record QueuedPacket(Packet<?> packet, Vec3 capturedPos) {}
 
     private final List<QueuedPacket> packets = new ArrayList<>();
 
@@ -86,22 +87,20 @@ public class Blink extends Module {
     @EventHandler
     public void onSendPacket(SendPacketEvent event) {
         if (!Utils.nullCheck() || sending) return;
-        if (!(event.packet instanceof ServerboundMovePlayerPacket p)) return;
 
-        event.cancel();
+        net.minecraft.network.protocol.Packet<?> p = event.packet;
 
-        QueuedPacket prev = packets.isEmpty() ? null : packets.get(packets.size() - 1);
-        if (prev != null &&
-                p.isOnGround() == prev.packet().isOnGround() &&
-                p.getYRot(-1) == prev.packet().getYRot(-1) &&
-                p.getXRot(-1) == prev.packet().getXRot(-1) &&
-                p.getX(-1) == prev.packet().getX(-1) &&
-                p.getY(-1) == prev.packet().getY(-1) &&
-                p.getZ(-1) == prev.packet().getZ(-1)
-        ) return;
+        if (p instanceof ServerboundMovePlayerPacket ||
+                p instanceof ServerboundPlayerActionPacket ||
+                p instanceof ServerboundInteractPacket ||
+                p instanceof ServerboundSwingPacket ||
+                p instanceof ServerboundUseItemOnPacket ||
+                p instanceof ServerboundUseItemPacket) {
 
-        synchronized (packets) {
-            packets.add(new QueuedPacket(p, mc.player.position()));
+            event.cancel();
+            synchronized (packets) {
+                packets.add(new QueuedPacket(p, mc.player.position()));
+            }
         }
     }
 

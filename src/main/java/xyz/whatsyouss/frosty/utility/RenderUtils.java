@@ -432,6 +432,30 @@ public class RenderUtils {
         drawBox(stack, AABB.unitCubeFromLowerCorner(vec), c, lineWidth, depthTest);
     }
 
+    public static void drawLine3D(PoseStack stack, Vec3 from, Vec3 to, Color c, float lineWidth, boolean depthTest) {
+        if (from.distanceToSqr(to) < 1.0E-6) return;
+
+        BufferSource bs = new BufferSource();
+        RenderType layer = RenderLayers.getLines(depthTest);
+        VertexConsumer buffer = bs.getBuffer(layer);
+        PoseStack.Pose entry = stack.last();
+
+        Vec3 cam = mc.getEntityRenderDispatcher().camera.position();
+        float x1 = (float) (from.x - cam.x);
+        float y1 = (float) (from.y - cam.y);
+        float z1 = (float) (from.z - cam.z);
+        float x2 = (float) (to.x - cam.x);
+        float y2 = (float) (to.y - cam.y);
+        float z2 = (float) (to.z - cam.z);
+
+        Vec3 dir = to.subtract(from).normalize();
+        int color = c.getRGB() | (c.getAlpha() << 24);
+        buffer.addVertex(entry, x1, y1, z1).setColor(color).setNormal(entry, (float) dir.x, (float) dir.y, (float) dir.z).setLineWidth(lineWidth);
+        buffer.addVertex(entry, x2, y2, z2).setColor(color).setNormal(entry, (float) dir.x, (float) dir.y, (float) dir.z).setLineWidth(lineWidth);
+
+        bs.uploadAndDraw();
+    }
+
     public static void drawBox(PoseStack stack, BlockPos bp, Color c, float lineWidth, boolean depthTest) {
         drawBox(stack, new AABB(bp), c, lineWidth, depthTest);
     }

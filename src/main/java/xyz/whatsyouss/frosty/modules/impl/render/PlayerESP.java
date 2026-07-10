@@ -18,6 +18,7 @@ import java.awt.*;
 public class PlayerESP extends Module {
 
     private ButtonSetting expand, fill;
+    public static ButtonSetting chams;
 
     private static double RANGE;
 
@@ -26,6 +27,7 @@ public class PlayerESP extends Module {
 
         this.registerSetting(expand = new ButtonSetting("Expand", true));
         this.registerSetting(fill = new ButtonSetting("Fill", false));
+        this.registerSetting(chams = new ButtonSetting("Chams", false));
     }
 
     @EventHandler

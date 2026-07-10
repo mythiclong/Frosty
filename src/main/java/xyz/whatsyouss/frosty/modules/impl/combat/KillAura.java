@@ -146,7 +146,6 @@ public class KillAura extends Module {
 
         mc.player.attack(currentTarget);
 
-        Vec3 hitVec = currentTarget.position().subtract(mc.player.position());
         mc.player.connection.send(new ServerboundAttackPacket(currentTarget.getId()));
         mc.player.swing(InteractionHand.MAIN_HAND);
 

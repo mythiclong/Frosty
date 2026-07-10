@@ -42,6 +42,9 @@ public class AutoHarp extends Module {
 
     @EventHandler
     public void onPreUpdate(PreUpdateEvent event) {
+        if (!Utils.nullCheck()) {
+            return;
+        }
         if (mc.gui.screen() instanceof ContainerScreen genericContainerScreen) {
             String title = genericContainerScreen.getTitle().getString();
 

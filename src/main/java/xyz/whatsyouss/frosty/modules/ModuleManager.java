@@ -9,10 +9,7 @@ import xyz.whatsyouss.frosty.modules.impl.fishing.AutoFish;
 import xyz.whatsyouss.frosty.modules.impl.foraging.LushlilacNuker;
 import xyz.whatsyouss.frosty.modules.impl.foraging.SeaLumiesNuker;
 import xyz.whatsyouss.frosty.modules.impl.foraging.WoodNuker;
-import xyz.whatsyouss.frosty.modules.impl.fun.Derp;
-import xyz.whatsyouss.frosty.modules.impl.fun.QMaths;
-import xyz.whatsyouss.frosty.modules.impl.fun.Spammer;
-import xyz.whatsyouss.frosty.modules.impl.fun.WBMacro;
+import xyz.whatsyouss.frosty.modules.impl.fun.*;
 import xyz.whatsyouss.frosty.modules.impl.hunting.AutoReel;
 import xyz.whatsyouss.frosty.modules.impl.hunting.Hideonleaf;
 import xyz.whatsyouss.frosty.modules.impl.mining.*;
@@ -102,6 +99,9 @@ public class ModuleManager {
     public static ScrollableTooltips scrollableTooltips;
 //    public static ShowArmorStand showArmorStand;
     public static AutoGift autoGift;
+    public static MurderMystery murderMystery;
+    public static Nametags nametags;
+    public static AntiTexture antiTexture;
 
     public void register() {
         this.addModule(tps = new TPS());
@@ -174,6 +174,9 @@ public class ModuleManager {
         this.addModule(scrollableTooltips = new ScrollableTooltips());
 //        this.addModule(showArmorStand = new ShowArmorStand());
         this.addModule(autoGift = new AutoGift());
+        this.addModule(murderMystery = new MurderMystery());
+//        this.addModule(nametags = new Nametags());
+        this.addModule(antiTexture = new AntiTexture());
         modules.sort(Comparator.comparing(Module::getName));
     }
 

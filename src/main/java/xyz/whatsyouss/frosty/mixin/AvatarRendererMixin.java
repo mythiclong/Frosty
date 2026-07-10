@@ -1,5 +1,6 @@
 package xyz.whatsyouss.frosty.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.entity.ClientAvatarEntity;
@@ -12,6 +13,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.whatsyouss.frosty.modules.impl.render.PlayerESP;
 import xyz.whatsyouss.frosty.utility.Rotations;
 
 import static xyz.whatsyouss.frosty.Frosty.mc;

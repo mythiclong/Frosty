@@ -27,7 +27,7 @@ public class AutoGift extends Module {
 
     @EventHandler
     public void onPreUpdate(PreUpdateEvent event) {
-        if (!Utils.nullCheck() || mc.level == null || mc.player == null) {
+        if (!Utils.nullCheck()) {
             return;
         }
 
