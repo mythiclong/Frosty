@@ -124,7 +124,7 @@ public class ModuleManager {
         this.addModule(axolotlESP = new AxolotlESP());
         this.addModule(antiBot = new AntiBot());
         this.addModule(playerESP = new PlayerESP());
-//        this.addModule(nametags = new Nametags());
+        this.addModule(nametags = new Nametags());
         this.addModule(frozenTreasure = new FrozenTreasure());
         this.addModule(sandNuker = new SandNuker());
         this.addModule(noBreakReset = new NoBreakReset());
@@ -175,7 +175,6 @@ public class ModuleManager {
 //        this.addModule(showArmorStand = new ShowArmorStand());
         this.addModule(autoGift = new AutoGift());
         this.addModule(murderMystery = new MurderMystery());
-//        this.addModule(nametags = new Nametags());
         this.addModule(antiTexture = new AntiTexture());
         modules.sort(Comparator.comparing(Module::getName));
     }
