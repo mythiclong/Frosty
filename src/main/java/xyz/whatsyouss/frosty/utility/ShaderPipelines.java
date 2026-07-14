@@ -71,4 +71,24 @@ public enum ShaderPipelines {
             .register(RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
                     .withLocation(Identifier.parse("frosty:pipeline/esp_quads"))
                     .withDepthStencilState(Optional.empty()).withCull(false).build());
+
+    public static final RenderPipeline ENTITY_TRANSLUCENT_NO_DEPTH = RenderPipelines
+            .register(copyWithoutDepth(RenderPipelines.ENTITY_TRANSLUCENT,
+                    Identifier.parse("frosty:pipeline/entity_translucent_no_depth")));
+
+    public static RenderPipeline copyWithoutDepth(RenderPipeline source, Identifier location) {
+        RenderPipeline.Builder builder = RenderPipeline.builder()
+                .withLocation(location)
+                .withVertexShader(source.getVertexShader())
+                .withFragmentShader(source.getFragmentShader())
+                .withVertexFormat(source.getVertexFormat(), source.getVertexFormatMode())
+                .withCull(source.isCull())
+                .withColorTargetState(source.getColorTargetState())
+                .withDepthStencilState(Optional.empty());
+        source.getSamplers().forEach(builder::withSampler);
+        source.getUniforms().forEach(uniform ->
+                builder.withUniform(uniform.name(), uniform.type())
+        );
+        return builder.build();
+    }
 }

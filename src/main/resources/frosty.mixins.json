@@ -36,6 +36,7 @@
     "LoadingOverlayMixin",
     "LocalPlayerMixin",
     "MinecraftMixin",
+    "MobRendererMixin",
     "MouseHandlerMixin",
     "MultiPlayerGameModeMixin",
     "PackMixin",

@@ -424,12 +424,12 @@ public class Utils {
         Team team = entity.level().getScoreboard().getPlayersTeam(entity.getScoreboardName());
 
         if (team != null) {
-            var teamColorOptional = team.getColor();
-
-            if (teamColorOptional.describeConstable().isPresent()) {
-                var teamColor = teamColorOptional.getColor();
-
-                return teamColor.intValue();
+            ChatFormatting formatting = team.getColor();
+            if (formatting != null) {
+                Integer colorValue = formatting.getColor();
+                if (colorValue != null) {
+                    return colorValue;
+                }
             }
         }
 
