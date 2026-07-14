@@ -70,4 +70,35 @@ public enum ShaderPipelines {
             .register(RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
                     .withLocation(Identifier.parse("frosty:pipeline/esp_quads"))
                     .withDepthStencilState(Optional.empty()).withCull(false).build());
+
+    public static final RenderPipeline ENTITY_TRANSLUCENT_NO_DEPTH = RenderPipelines
+            .register(copyWithoutDepth(RenderPipelines.ENTITY_TRANSLUCENT,
+                    Identifier.parse("frosty:pipeline/entity_translucent_no_depth")));
+
+    private static RenderPipeline copyWithoutDepth(RenderPipeline source, Identifier location) {
+        RenderPipeline.Builder builder = RenderPipeline.builder()
+                .withLocation(location)
+                .withVertexShader(source.getVertexShader())
+                .withFragmentShader(source.getFragmentShader())
+                .withCull(source.isCull())
+                .withPrimitiveTopology(source.getPrimitiveTopology())
+                .withDepthStencilState(Optional.empty());
+
+        ColorTargetState[] colorTargetStates = source.getColorTargetStates();
+        for (int i = 0; i < colorTargetStates.length; i++) {
+            ColorTargetState state = colorTargetStates[i];
+            if (state == null) {
+                builder.withUnusedColorTargetState(i);
+            } else {
+                builder.withColorTargetState(i, state);
+            }
+        }
+
+        for (int i = 0; i < source.getVertexFormatBindings().length; i++) {
+            builder.withVertexBinding(i, source.getVertexFormatBinding(i));
+        }
+        source.getBindGroupLayouts().forEach(builder::withBindGroupLayout);
+
+        return builder.build();
+    }
 }

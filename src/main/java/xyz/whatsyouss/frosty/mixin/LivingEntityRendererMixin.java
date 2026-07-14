@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
@@ -17,13 +16,16 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.scores.PlayerTeam;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.whatsyouss.frosty.interfaces.IEntityRenderState;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
-import xyz.whatsyouss.frosty.modules.impl.render.PlayerESP;
+import xyz.whatsyouss.frosty.modules.impl.other.AntiBot;
+import xyz.whatsyouss.frosty.utility.RenderLayers;
 import static xyz.whatsyouss.frosty.Frosty.mc;
+import static xyz.whatsyouss.frosty.modules.impl.render.PlayerESP.chams;
 
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> {
@@ -50,9 +52,14 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
     @ModifyReturnValue(method = "getRenderType", at = @At("RETURN"))
     private RenderType frosty$chamsRenderType(RenderType original, S state, boolean visible, boolean translucent, boolean glowing) {
         Entity entity = ((IEntityRenderState) state).frosty$getEntity();
-        if (entity instanceof Player && ModuleManager.playerESP.isEnabled() && PlayerESP.chams.isToggled()) {
-            return RenderTypes.entityTranslucentEmissive(getTextureLocation(state), true);
+        if (frosty$shouldRenderPlayerChams(entity)) {
+            return RenderLayers.entityTranslucentNoDepth(getTextureLocation(state));
         }
         return original;
+    }
+
+    @Unique
+    private boolean frosty$shouldRenderPlayerChams(Entity entity) {
+        return entity instanceof Player && ModuleManager.playerESP.isEnabled() && chams.isToggled() && (!ModuleManager.antiBot.isEnabled() || !AntiBot.isBot((Player) entity));
     }
 }

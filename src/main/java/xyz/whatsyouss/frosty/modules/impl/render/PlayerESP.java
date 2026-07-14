@@ -7,7 +7,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.util.Mth;
 import xyz.whatsyouss.frosty.events.impl.Render3DEvent;
 import xyz.whatsyouss.frosty.modules.Module;
-import xyz.whatsyouss.frosty.modules.ModuleManager;
 import xyz.whatsyouss.frosty.modules.impl.other.AntiBot;
 import xyz.whatsyouss.frosty.settings.impl.ButtonSetting;
 import xyz.whatsyouss.frosty.utility.RenderUtils;
@@ -17,7 +16,7 @@ import java.awt.*;
 
 public class PlayerESP extends Module {
 
-    private ButtonSetting expand, fill;
+    private ButtonSetting expand, line, fill;
     public static ButtonSetting chams;
 
     private static double RANGE;
@@ -26,6 +25,7 @@ public class PlayerESP extends Module {
         super("PlayerESP", "玩家透视", category.Render);
 
         this.registerSetting(expand = new ButtonSetting("Expand", true));
+        this.registerSetting(line = new ButtonSetting("Line", true));
         this.registerSetting(fill = new ButtonSetting("Fill", false));
         this.registerSetting(chams = new ButtonSetting("Chams", false));
     }
@@ -62,10 +62,12 @@ public class PlayerESP extends Module {
                 new Color(colorValue) :
                 new Color(255, 255, 255, 150);
 
+        if (line.isToggled()) {
+            RenderUtils.drawBox(matrices, box, color, 2f, false);
+        }
+
         if (fill.isToggled()) {
             RenderUtils.drawBoxFilled(matrices, box, new Color(color.getRed(), color.getGreen(), color.getBlue(), 50), false);
         }
-
-        RenderUtils.drawBox(matrices, box, color, 2f, false);
     }
 }

@@ -39,13 +39,13 @@ import java.util.Random;
 
 public class AutoFish extends Module {
 
-    private static final int REEL_SCAN_TICKS = 30;
+    private static final int REEL_SCAN_TICKS = 3;
     private static final double SEA_CREATURE_SPAWN_RANGE = 1.0;
     private static final double SEA_CREATURE_KEEP_RANGE = 32.0;
     private static final double ATTACK_RANGE = 3.5;
     private static final double SMALL_TARGET_ATTACK_RANGE = 2.35;
     private static final double PATH_GOAL_RECOMPUTE_DIST = 2.0;
-    private static final double PATH_REACHED_XZ = 0.35;
+    private static final double PATH_REACHED_XZ = 0.5;
     private static final double RETURN_REACHED_XZ = 0.45;
     private static final int PATH_RECOMPUTE_TICKS = 30;
     private static final int PATH_RANGE = 96;
@@ -55,11 +55,13 @@ public class AutoFish extends Module {
     private String[] faces = new String[]{"Mob", "Down"};
 
     private ButtonSetting autoThrow, autoKill, antiAFK, useAbility;
-    private SliderSetting maxWait, weaponSlot;
+    private SliderSetting maxWait, triggerAmount, weaponSlot;
     private SelectSetting face;
 
     private int currentMode = 0;
 
+    private long biteTime = 0;
+    private long randomDelayMs = 0;
     private Thread antiAFKThread;
     private boolean hookBiten = false;
     private long throwTick = 0;
@@ -71,6 +73,12 @@ public class AutoFish extends Module {
     private Vec3 startPos = null;
     private float startYaw = 0f;
     private float startPitch = 0f;
+
+    private float preAbilityYaw = 0f;
+    private float preAbilityPitch = 0f;
+    private boolean rotationSaved = false;
+    private int itemSwitchTicks = 0;
+
     private Vec3 lastReelPos = null;
     private long reelScanUntil = 0;
     private KillState killState = KillState.IDLE;
@@ -92,6 +100,7 @@ public class AutoFish extends Module {
         this.registerSetting(antiAFK = new ButtonSetting("Anti AFK", true));
         this.registerSetting(maxWait = new SliderSetting("Max Wait", "s", 30, 5, 60, 1));
         this.registerSetting(autoKill = new ButtonSetting("Auto kill", true));
+        this.registerSetting(triggerAmount = new SliderSetting("Trigger amount", 3, 1, 15, 1));
         this.registerSetting(useAbility = new ButtonSetting("Use ability", false));
         this.registerSetting(face = new SelectSetting("Face", 0, faces));
         this.registerSetting(weaponSlot = new SliderSetting("Weapon slot", 1, 1, 9, 1));
@@ -100,6 +109,7 @@ public class AutoFish extends Module {
     @Override
     public void guiUpdate() {
         this.face.setVisibilityCondition(() -> autoKill.isToggled() && useAbility.isToggled());
+        this.triggerAmount.setVisibilityCondition(() -> autoKill.isToggled());
         this.useAbility.setVisibilityCondition(() -> autoKill.isToggled());
         this.weaponSlot.setVisibilityCondition(() -> autoKill.isToggled());
     }
@@ -141,6 +151,19 @@ public class AutoFish extends Module {
             }
             case 2 -> {
                 checkForArmorStand();
+
+                if (hookBiten) {
+                    if (biteTime == 0) {
+                        biteTime = System.currentTimeMillis();
+                        randomDelayMs = 10 + new Random().nextInt(291);
+                    }
+                    if (System.currentTimeMillis() - biteTime >= randomDelayMs) {
+                        currentMode = 3;
+                        biteTime = 0;
+                    }
+                    return;
+                }
+
                 if (mc.player.fishing == null) {
                     if (currentTick - throwTick >= 20) {
                         currentMode = 1;
@@ -148,9 +171,6 @@ public class AutoFish extends Module {
                     return;
                 }
                 if (currentTick - waitStartTick >= maxWait.getInput() * 20) {
-                    currentMode = 3;
-                }
-                if (hookBiten) {
                     currentMode = 3;
                 }
             }
@@ -230,6 +250,8 @@ public class AutoFish extends Module {
         lastReelPos = null;
         lastKilledSlimePos = null;
         slimeSplitScanUntil = 0;
+        rotationSaved = false;
+        itemSwitchTicks = 0;
 
         this.rodHand = null;
         ItemStack mainHand = mc.player.getItemInHand(InteractionHand.MAIN_HAND);
@@ -344,28 +366,42 @@ public class AutoFish extends Module {
         if (mc.level.getGameTime() < reelScanUntil) return;
         reelScanUntil = 0;
 
-        if (targets.isEmpty()) {
-            beginRestore();
+        if (targets.size() < (int) triggerAmount.getInput()) {
+            restoreRodAndThrow();
             return;
         }
 
         selectNextTarget();
         mc.player.getInventory().setSelectedSlot((int) weaponSlot.getInput() - 1);
+
+        itemSwitchTicks = 3;
+        rotationSaved = false;
+
         killState = useAbility.isToggled() ? KillState.ABILITY : KillState.CHASING;
     }
 
     private void tickAbilityKill() {
         if (!ensureTarget()) return;
+
+        if (itemSwitchTicks > 0) {
+            itemSwitchTicks--;
+            return;
+        }
+
+        if (!rotationSaved) {
+            preAbilityYaw = mc.player.getYRot();
+            preAbilityPitch = mc.player.getXRot();
+            rotationSaved = true;
+        }
+
         mc.player.getInventory().setSelectedSlot((int) weaponSlot.getInput() - 1);
 
         if ((int) face.getValue() == 0) {
             Vec3 aim = currentTarget.position().add(0, Math.max(0.1, currentTarget.getBbHeight() / 3.0), 0);
-            RotationUtils.aimByPos(aim, 5);
+            RotationUtils.aimByPos(aim, 4);
             float[] angles = RotationUtils.getYawPitchTo(mc.player.getEyePosition(), aim);
             if (rotationClose(angles[0], angles[1], 1.5f)) {
                 if (isLookingAtBlock()) {
-                    targets.remove(currentTarget);
-                    currentTarget = null;
                     return;
                 }
                 useWeaponAbility();
@@ -373,11 +409,9 @@ public class AutoFish extends Module {
                 currentTarget = null;
             }
         } else {
-            RotationUtils.setPitchTo(90f, 5);
+            RotationUtils.setPitchTo(90f, 4);
             if (Math.abs(Mth.wrapDegrees(90f - mc.player.getXRot())) < 1.5f) {
                 if (isLookingAtBlock()) {
-                    targets.remove(currentTarget);
-                    currentTarget = null;
                     return;
                 }
                 useWeaponAbility();
@@ -409,7 +443,7 @@ public class AutoFish extends Module {
 
         releaseMovement();
         Vec3 aim = currentTarget.position().add(0, currentTarget.getBbHeight() / 2.0, 0);
-        RotationUtils.aimByPos(aim, 5);
+        RotationUtils.aimByPos(aim, 4);
         if (attackCooldown == 0 && canAttackCurrentTarget(aim)) {
             mc.player.attack(currentTarget);
             mc.player.connection.send(new ServerboundAttackPacket(currentTarget.getId()));
@@ -441,9 +475,13 @@ public class AutoFish extends Module {
     private void tickRestoreRotation() {
         releaseMovement();
         restoreTicks++;
-        RotationUtils.setYawTo(startYaw, 5);
-        RotationUtils.setPitchTo(startPitch, 5);
-        if (rotationClose(startYaw, startPitch, 1.0f) || restoreTicks >= RESTORE_TIMEOUT_TICKS) {
+
+        float targetYaw = useAbility.isToggled() ? preAbilityYaw : startYaw;
+        float targetPitch = useAbility.isToggled() ? preAbilityPitch : startPitch;
+
+        RotationUtils.setYawTo(targetYaw, 4);
+        RotationUtils.setPitchTo(targetPitch, 4);
+        if (rotationClose(targetYaw, targetPitch, 1.0f) || restoreTicks >= RESTORE_TIMEOUT_TICKS) {
             restoreRodAndThrow();
         }
     }
@@ -476,6 +514,7 @@ public class AutoFish extends Module {
         }
         killState = KillState.IDLE;
         currentMode = autoThrow.isToggled() ? 1 : 0;
+        rotationSaved = false;
     }
 
     private void selectNextTarget() {
@@ -494,7 +533,7 @@ public class AutoFish extends Module {
 
     private boolean isSeaCreatureCandidate(Entity entity) {
         if (!(entity instanceof LivingEntity)) return false;
-        if (entity == mc.player || (entity instanceof Player && !AntiBot.isBot((Player) entity)) || entity instanceof ArmorStand) return false;
+        if (entity == mc.player || entity instanceof ArmorStand) return false;
         if (!entity.isAlive()) return false;
         if (mc.player.distanceTo(entity) > SEA_CREATURE_KEEP_RANGE) return false;
         if (lastReelPos != null && entity.position().distanceTo(lastReelPos) > SEA_CREATURE_SPAWN_RANGE) return false;
