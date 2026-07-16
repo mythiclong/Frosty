@@ -22,7 +22,7 @@ public abstract class ChatScreenMixin {
         if (!ModuleManager.chatCopier.isEnabled()) return;
         if (event.button() != 1) return;
 
-        ChatComponent chat = mc.gui.hud.getChat();
+        ChatComponent chat = mc.gui.getChat();
         Component message = findMessageAt(chat, event.x(), event.y(), mc.getWindow().getGuiScaledHeight());
 
         if (message != null) {

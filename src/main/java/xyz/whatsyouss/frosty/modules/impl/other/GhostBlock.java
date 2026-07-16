@@ -41,7 +41,7 @@ public class GhostBlock extends Module {
         if (!Utils.nullCheck()) {
             return;
         }
-        if (!holdingPickaxe() || mc.gui.screen() != null) {
+        if (!holdingPickaxe() || mc.screen != null) {
             return;
         }
         if (event.button == 1 && event.action == KeyAction.Press) {

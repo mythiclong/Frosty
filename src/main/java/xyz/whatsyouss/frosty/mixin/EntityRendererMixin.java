@@ -16,8 +16,8 @@ import xyz.whatsyouss.frosty.modules.impl.render.NickHider;
 @Mixin(EntityRenderer.class)
 public abstract class EntityRendererMixin<T extends Entity, S extends EntityRenderState> {
 
-    @Inject(method = "extractNameTags(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/entity/state/EntityRenderState;FDD)V", at = @At("TAIL"))
-    private void onExtractNameTags(T entity, S state, float partialTicks, double nameTagDistance, double belowNameDistance, CallbackInfo ci) {
+    @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/entity/state/EntityRenderState;F)V",
+            at = @At("TAIL")) private void onExtractRenderState(T entity, S state, float partialTicks, CallbackInfo ci) {
         if (state == null || state.nameTag == null) return;
 
         if (entity instanceof Player && ModuleManager.nametags.isEnabled()) {
@@ -25,7 +25,6 @@ public abstract class EntityRendererMixin<T extends Entity, S extends EntityRend
         }
 
         if (entity instanceof Player && ModuleManager.nickHider.isEnabled() && !ModuleManager.nickHider.name.getValue().isEmpty()) {
-
             state.nameTag = NickHider.processText((MutableComponent) state.nameTag);
         }
     }

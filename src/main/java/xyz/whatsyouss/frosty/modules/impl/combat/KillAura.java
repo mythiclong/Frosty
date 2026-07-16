@@ -67,7 +67,7 @@ public class KillAura extends Module {
             } else if (event.action == KeyAction.Release) {
                 lcing = false;
             }
-            if (currentTarget != null && mc.gui.screen() == null) {
+            if (currentTarget != null && mc.screen == null) {
                 event.cancel();
             }
         }
@@ -77,7 +77,7 @@ public class KillAura extends Module {
             } else if (event.action == KeyAction.Release) {
                 rcing = false;
             }
-            if (currentTarget != null && mc.gui.screen() == null) {
+            if (currentTarget != null && mc.screen == null) {
                 event.cancel();
             }
         }

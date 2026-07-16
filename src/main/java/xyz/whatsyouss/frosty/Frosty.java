@@ -49,9 +49,9 @@ public class Frosty implements ModInitializer {
 	public void onPreUpdate(PreUpdateEvent e) {
 		if (Utils.nullCheck()) {
 			for (Module module : ModuleManager.getModules()) {
-				if (mc.gui.screen() == null) {
+				if (mc.screen == null) {
 					module.onKeyBind();
-				} else if (mc.gui.screen() instanceof ClickGui) {
+				} else if (mc.screen instanceof ClickGui) {
 					module.guiUpdate();
 				}
 				if (module.isEnabled()) {

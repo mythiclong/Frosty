@@ -31,7 +31,7 @@ public abstract class LightmapMixin {
             var profile = Profiler.get();
             profile.push("lightmap");
 
-            RenderSystem.getDevice().createCommandEncoder().clearColorTexture(texture, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+            RenderSystem.getDevice().createCommandEncoder().clearColorTexture(texture, ARGB.color(255, 255, 255, 255));
             profile.pop();
             ci.cancel();
         }

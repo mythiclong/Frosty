@@ -274,12 +274,7 @@ public class Xray extends Module {
 
     private void reloadWorldRenderer() {
         if (mc.level != null && mc.levelRenderer != null) {
-            mc.levelRenderer.invalidateCompiledGeometry(
-                    mc.level,
-                    mc.options,
-                    mc.gameRenderer.mainCamera(),
-                    mc.getBlockColors()
-            );
+            mc.levelRenderer.allChanged();
         }
     }
 

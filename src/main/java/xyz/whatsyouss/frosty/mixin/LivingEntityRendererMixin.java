@@ -20,6 +20,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.whatsyouss.frosty.Frosty;
 import xyz.whatsyouss.frosty.interfaces.IEntityRenderState;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
 import xyz.whatsyouss.frosty.modules.impl.other.AntiBot;
@@ -56,6 +58,14 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
             return RenderLayers.entityTranslucentNoDepth(getTextureLocation(state));
         }
         return original;
+    }
+
+    @Inject(method = "shouldShowName(Lnet/minecraft/world/entity/LivingEntity;D)Z", at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/Minecraft;getInstance()Lnet/minecraft/client/Minecraft;",
+                    ordinal = 0), cancellable = true)
+    private void shouldForceLabel(LivingEntity entity, double distanceSq, CallbackInfoReturnable<Boolean> cir) {
+        if (ModuleManager.nametags.isEnabled())
+            cir.setReturnValue(true);
     }
 
     @Unique

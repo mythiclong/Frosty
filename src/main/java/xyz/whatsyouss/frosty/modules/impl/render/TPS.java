@@ -31,7 +31,7 @@ public class TPS extends Module {
 
     @EventHandler
     private void onRender2D(Render2DEvent event) {
-        if (!Utils.nullCheck() || mc.gui.hud.isHidden()) {
+        if (!Utils.nullCheck() || mc.options.hideGui) {
             return;
         }
 

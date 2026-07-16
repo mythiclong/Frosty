@@ -55,9 +55,9 @@ public abstract class MinecraftMixin {
         Minecraft minecraft = (Minecraft) (Object) this;
         if (!frosty$languagePromptShown
                 && ConfigManager.shouldShowLanguagePrompt()
-                && minecraft.gui.screen() instanceof TitleScreen titleScreen) {
+                && minecraft.screen instanceof TitleScreen titleScreen) {
             frosty$languagePromptShown = true;
-            minecraft.gui.setScreen(new LanguageSelectScreen(titleScreen));
+            minecraft.setScreen(new LanguageSelectScreen(titleScreen));
             return;
         }
 

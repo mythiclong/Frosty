@@ -57,7 +57,7 @@ public class HUD extends Module {
 
     @EventHandler
     public void onRender2D(Render2DEvent event) {
-        if (!Utils.nullCheck() || mc.gui.hud.isHidden()) {
+        if (!Utils.nullCheck() || mc.options.hideGui) {
             return;
         }
 

@@ -170,7 +170,7 @@ public class FarmingMacro extends Module {
             return;
         }
         if (!mc.mouseHandler.isMouseGrabbed()) {
-            if (mc.gui.screen() == null) {
+            if (mc.screen == null) {
                 prepareMouseForMacroStart();
                 setKeyPressed(mc.options.keyAttack, true);
             } else {
@@ -541,7 +541,7 @@ public class FarmingMacro extends Module {
     }
 
     private void prepareMouseForMacroStart() {
-        if (mc.gui.screen() != null) return;
+        if (mc.screen != null) return;
 
         boolean restoreUngrab = ModuleManager.ungrabMouse != null && ModuleManager.ungrabMouse.isEnabled();
         if (restoreUngrab) {

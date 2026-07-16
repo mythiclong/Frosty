@@ -30,21 +30,21 @@ public class UI extends Module {
         if (!Utils.nullCheck()) {
             return;
         }
-        mc.gui.setScreen(new ClickGui());
+        mc.setScreen(new ClickGui());
     }
 
     public void onDisable() {
         if (!Utils.nullCheck()) {
             return;
         }
-        if (mc.gui.screen() instanceof ClickGui) {
-            mc.gui.setScreen(null);
+        if (mc.screen instanceof ClickGui) {
+            mc.setScreen(null);
         }
     }
 
     @Override
     public void onUpdate() {
-        if (!(mc.gui.screen() instanceof ClickGui)) {
+        if (!(mc.screen instanceof ClickGui)) {
             this.disable();
         }
     }

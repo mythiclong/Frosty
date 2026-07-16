@@ -1,40 +1,22 @@
 package xyz.whatsyouss.frosty.utility;
 
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.IndexType;
-import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.CommandEncoder;
-import com.mojang.blaze3d.systems.RenderPass;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.textures.*;
 import com.mojang.blaze3d.vertex.*;
-import net.minecraft.client.Camera;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.font.TextRenderable;
-import net.minecraft.client.gui.font.glyphs.BakedGlyph;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.state.level.LevelRenderState;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.BlockPos;
-import org.jetbrains.annotations.Nullable;
 import org.joml.*;
-import org.lwjgl.system.MemoryUtil;
 
-import javax.lang.model.element.Element;
 import java.awt.Color;
 import java.lang.Math;
 import java.nio.ByteBuffer;
@@ -58,74 +40,11 @@ public class RenderUtils {
     private static GpuTextureView whiteTextureView;
     private static GpuSampler     whiteSampler;
 
-    static void ensureWhiteTexture() {
-        if (whiteTexture != null) return;
-
-        whiteTexture = RenderSystem.getDevice().createTexture("frosty_white",
-                GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_COPY_DST,
-                GpuFormat.RGBA8_UNORM, 1, 1, 1, 1);
-
-        whiteTextureView = RenderSystem.getDevice().createTextureView(whiteTexture);
-        whiteSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
-
-        CommandEncoder enc = RenderSystem.getDevice().createCommandEncoder();
-        ByteBuffer px = MemoryUtil.memAlloc(4);
-        px.put((byte)0xFF).put((byte)0xFF).put((byte)0xFF).put((byte)0xFF).flip();
-        enc.writeToTexture(whiteTexture, px,0, 0, 0, 0, 1, 1);
-
-        MemoryUtil.memFree(px);
-    }
-
     private static void uploadToGpuBuffer(CommandEncoder encoder,
                                           GpuBuffer gpuBuf,
                                           ByteBuffer data,
                                           int size) {
         encoder.writeToBuffer(gpuBuf.slice(0, size), data);
-    }
-
-    private static void submitMesh(MeshData mesh, RenderPipeline pipeline, GpuTextureView texView, GpuSampler sampler) {
-        if (mesh == null) return;
-        ensureWhiteTexture();
-
-        ByteBuffer vertData = mesh.vertexBuffer();
-        int size = vertData.remaining();
-
-        GpuBuffer gpuBuf = RenderSystem.getDevice().createBuffer(
-                () -> "frosty_transient",
-                GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST,
-                size);
-
-        CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
-        uploadToGpuBuffer(encoder, gpuBuf, vertData, size);
-
-        int indexCount = mesh.drawState().indexCount();
-        RenderSystem.AutoStorageIndexBuffer seqBuf =
-                RenderSystem.getSequentialBuffer(PrimitiveTopology.TRIANGLES);
-        GpuBuffer idxBuffer = seqBuf.getBuffer(indexCount);
-        com.mojang.blaze3d.IndexType idxType = seqBuf.type();
-
-        var target = mc.gameRenderer.mainRenderTarget();
-
-        try (RenderPass pass = encoder.createRenderPass(
-                () -> "frosty_draw",
-                target.getColorTextureView(),
-                Optional.empty(),
-                target.getDepthTextureView(),
-                OptionalDouble.empty()
-        )) {
-            RenderSystem.bindDefaultUniforms(pass);
-            pass.setPipeline(pipeline);
-            pass.setVertexBuffer(0, gpuBuf.slice());
-            pass.setIndexBuffer(idxBuffer, idxType);
-            pass.bindTexture("Sampler0",
-                    texView != null ? texView : whiteTextureView,
-                    sampler != null ? sampler : whiteSampler);
-            pass.disableScissor();
-            pass.drawIndexed(indexCount, 1, 0, 0, 0);
-        }
-
-        gpuBuf.close();
-        mesh.close();
     }
 
     private static RenderPipeline getGuiPipeline() {
@@ -156,84 +75,6 @@ public class RenderUtils {
         ctx.fill(x,             y + height - 1, x + width, y + height,    color);
         ctx.fill(x,             y,              x + 1,     y + height,    color);
         ctx.fill(x + width - 1, y,              x + width, y + height,    color);
-    }
-
-    public static void rectFilled(PoseStack stack,
-                                  float x1, float y1, float x2, float y2,
-                                  int color, RenderPipeline pipeline) {
-        BufferBuilder buf = new BufferBuilder(BYTE_BUFFER,
-                PrimitiveTopology.TRIANGLES, DefaultVertexFormat.POSITION_TEX);
-        Matrix4f m = stack.last().pose();
-        buf.addVertex(m, x1, y1, 0f).setUv(0f, 0f);
-        buf.addVertex(m, x2, y1, 0f).setUv(1f, 0f);
-        buf.addVertex(m, x2, y2, 0f).setUv(1f, 1f);
-        buf.addVertex(m, x1, y1, 0f).setUv(0f, 0f);
-        buf.addVertex(m, x2, y2, 0f).setUv(1f, 1f);
-        buf.addVertex(m, x1, y2, 0f).setUv(0f, 1f);
-        MeshData mesh = buf.build();
-        if (mesh == null) return;
-        submitMesh(mesh, pipeline, null, null);
-    }
-
-    public static void rectFilled(PoseStack stack,
-                                  float x1, float y1, float x2, float y2, int color) {
-        ensureWhiteTexture();
-        float a = ((color >> 24) & 0xFF) / 255f;
-        float r = ((color >> 16) & 0xFF) / 255f;
-        float g = ((color >>  8) & 0xFF) / 255f;
-        float b = (color         & 0xFF) / 255f;
-
-        if (x1 > x2) { float t = x1; x1 = x2; x2 = t; }
-        if (y1 > y2) { float t = y1; y1 = y2; y2 = t; }
-
-        BufferBuilder buf = new BufferBuilder(BYTE_BUFFER,
-                PrimitiveTopology.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
-        Matrix4f m = stack.last().pose();
-        buf.addVertex(m, x1, y1, 0f).setColor(r, g, b, a);
-        buf.addVertex(m, x2, y1, 0f).setColor(r, g, b, a);
-        buf.addVertex(m, x2, y2, 0f).setColor(r, g, b, a);
-        buf.addVertex(m, x1, y1, 0f).setColor(r, g, b, a);
-        buf.addVertex(m, x2, y2, 0f).setColor(r, g, b, a);
-        buf.addVertex(m, x1, y2, 0f).setColor(r, g, b, a);
-        MeshData mesh = buf.build();
-        if (mesh == null) return;
-
-        RenderPipeline pipe = getGuiPipeline();
-        if (pipe != null) submitMesh(mesh, pipe, null, null);
-        else mesh.close();
-    }
-
-    public static void rect(PoseStack stack,
-                            float x1, float y1, float x2, float y2, int color) {
-        rectFilled(stack, x1, y1, x2, y2, color);
-    }
-
-    public static void rect(PoseStack stack,
-                            float x1, float y1, float x2, float y2, int color, float width) {
-        drawHorizontalLine(stack, x1, x2, y1, color, width);
-        drawVerticalLine  (stack, x2, y1, y2, color, width);
-        drawHorizontalLine(stack, x1, x2, y2, color, width);
-        drawVerticalLine  (stack, x1, y1, y2, color, width);
-    }
-
-    protected static void drawHorizontalLine(PoseStack m, float x1, float x2, float y, int color) {
-        if (x2 < x1) { float t = x1; x1 = x2; x2 = t; }
-        rectFilled(m, x1, y, x2 + 1, y + 1, color);
-    }
-
-    protected static void drawVerticalLine(PoseStack m, float x, float y1, float y2, int color) {
-        if (y2 < y1) { float t = y1; y1 = y2; y2 = t; }
-        rectFilled(m, x, y1 + 1, x + 1, y2, color);
-    }
-
-    protected static void drawHorizontalLine(PoseStack m, float x1, float x2, float y, int color, float w) {
-        if (x2 < x1) { float t = x1; x1 = x2; x2 = t; }
-        rectFilled(m, x1, y, x2 + w, y + w, color);
-    }
-
-    protected static void drawVerticalLine(PoseStack m, float x, float y1, float y2, int color, float w) {
-        if (y2 < y1) { float t = y1; y1 = y2; y2 = t; }
-        rectFilled(m, x, y1 + w, x + w, y2, color);
     }
 
     public static void drawRoundedRect(GuiGraphicsExtractor ctx,
@@ -268,37 +109,6 @@ public class RenderUtils {
         fillArc(ctx, cx, cy, radius, 0, 360, color);
     }
 
-    public static void drawLine2D(PoseStack stack,
-                                  float x1, float y1, float x2, float y2,
-                                  float thickness, int color) {
-        float dx = x2 - x1, dy = y2 - y1;
-        float len = (float) Math.sqrt(dx * dx + dy * dy);
-        if (len < 0.001f) return;
-        float nx = -dy / len * thickness * 0.5f;
-        float ny =  dx / len * thickness * 0.5f;
-
-        BufferBuilder buf = new BufferBuilder(BYTE_BUFFER,
-                PrimitiveTopology.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
-        Matrix4f m = stack.last().pose();
-        float a = ((color >> 24) & 0xFF) / 255f;
-        float r = ((color >> 16) & 0xFF) / 255f;
-        float g = ((color >>  8) & 0xFF) / 255f;
-        float b = (color         & 0xFF) / 255f;
-
-        buf.addVertex(m, x1+nx, y1+ny, 0f).setColor(r,g,b,a);
-        buf.addVertex(m, x1-nx, y1-ny, 0f).setColor(r,g,b,a);
-        buf.addVertex(m, x2-nx, y2-ny, 0f).setColor(r,g,b,a);
-        buf.addVertex(m, x1+nx, y1+ny, 0f).setColor(r,g,b,a);
-        buf.addVertex(m, x2-nx, y2-ny, 0f).setColor(r,g,b,a);
-        buf.addVertex(m, x2+nx, y2+ny, 0f).setColor(r,g,b,a);
-        MeshData mesh = buf.build();
-        if (mesh == null) return;
-
-        RenderPipeline pipe = getGuiPipeline();
-        if (pipe != null) submitMesh(mesh, pipe, null, null);
-        else mesh.close();
-    }
-
     private static void fillArc(GuiGraphicsExtractor ctx,
                                 float cx, float cy, float r,
                                 float startDeg, float sweepDeg, int color) {
@@ -331,9 +141,9 @@ public class RenderUtils {
     }
 
     public static void drawBoxFilled(PoseStack stack, AABB box, Color c, boolean depthTest) {
-        BufferSource bs = new BufferSource();
+        MultiBufferSource.BufferSource vcp = getVCP();
         RenderType layer = RenderLayers.getQuads(depthTest);
-        VertexConsumer buffer = bs.getBuffer(layer);
+        VertexConsumer buffer = vcp.getBuffer(layer);
 
         Vec3 cam = mc.getEntityRenderDispatcher().camera.position();
         AABB relative = box.move(-cam.x, -cam.y, -cam.z);
@@ -341,7 +151,39 @@ public class RenderUtils {
         int color = c.getRGB() | (c.getAlpha() << 24);
         drawSolidBoxInternal(stack, buffer, relative, color);
 
-        bs.uploadAndDraw();
+        vcp.endBatch(layer);
+    }
+
+    public static void drawBoxes(BufferSource buffers, PoseStack stack, Collection<ColoredBox> boxes,
+                                 float fillAlpha, float outlineAlpha, float lineWidth,
+                                 boolean drawFill, boolean drawOutline, boolean depthTest) {
+        if (boxes.isEmpty()) {
+            return;
+        }
+
+        Vec3 cam = mc.getEntityRenderDispatcher().camera.position();
+        if (drawFill) {
+            VertexConsumer buffer = buffers.getBuffer(RenderLayers.getQuads(depthTest));
+            for (ColoredBox coloredBox : boxes) {
+                drawSolidBoxInternal(stack, buffer,
+                        coloredBox.box().move(-cam.x, -cam.y, -cam.z),
+                        withAlpha(coloredBox.color(), fillAlpha));
+            }
+        }
+        if (drawOutline) {
+            VertexConsumer buffer = buffers.getBuffer(RenderLayers.getLines(depthTest));
+            for (ColoredBox coloredBox : boxes) {
+                drawOutlinedBoxInternal(stack, buffer,
+                        coloredBox.box().move(-cam.x, -cam.y, -cam.z),
+                        withAlpha(coloredBox.color(), outlineAlpha), lineWidth);
+            }
+        }
+        buffers.uploadAndDraw();
+    }
+
+    private static int withAlpha(Color color, float alpha) {
+        int a = Mth.clamp(Math.round(alpha * 255.0f), 0, 255);
+        return a << 24 | color.getRGB() & 0x00FFFFFF;
     }
 
     private static void drawSolidBoxInternal(PoseStack matrices, VertexConsumer buffer, AABB box, int color) {
@@ -381,9 +223,9 @@ public class RenderUtils {
     }
 
     public static void drawBox(PoseStack stack, AABB box, Color c, float lineWidth, boolean depthTest) {
-        BufferSource bs = new BufferSource();
+        MultiBufferSource.BufferSource vcp = getVCP();
         RenderType layer = RenderLayers.getLines(depthTest);
-        VertexConsumer buffer = bs.getBuffer(layer);
+        VertexConsumer buffer = vcp.getBuffer(layer);
 
         Vec3 cam = mc.getEntityRenderDispatcher().camera.position();
         AABB relative = box.move(-cam.x, -cam.y, -cam.z);
@@ -391,50 +233,7 @@ public class RenderUtils {
         int color = c.getRGB() | (c.getAlpha() << 24);
         drawOutlinedBoxInternal(stack, buffer, relative, color, lineWidth);
 
-        bs.uploadAndDraw();
-    }
-
-    public static void drawBoxes(PoseStack stack, Collection<ColoredBox> boxes,
-                                 float fillAlpha, float outlineAlpha, float lineWidth,
-                                 boolean drawFill, boolean drawOutline, boolean depthTest) {
-        if (boxes.isEmpty()) {
-            return;
-        }
-        drawBoxes(new BufferSource(), stack, boxes, fillAlpha, outlineAlpha, lineWidth,
-                drawFill, drawOutline, depthTest);
-    }
-
-    public static void drawBoxes(BufferSource buffers, PoseStack stack, Collection<ColoredBox> boxes,
-                                 float fillAlpha, float outlineAlpha, float lineWidth,
-                                 boolean drawFill, boolean drawOutline, boolean depthTest) {
-        if (boxes.isEmpty()) {
-            return;
-        }
-
-        Vec3 cam = mc.getEntityRenderDispatcher().camera.position();
-
-        if (drawFill) {
-            VertexConsumer buffer = buffers.getBuffer(RenderLayers.getQuads(depthTest));
-            for (ColoredBox coloredBox : boxes) {
-                int color = withAlpha(coloredBox.color(), fillAlpha);
-                drawSolidBoxInternal(stack, buffer, coloredBox.box().move(-cam.x, -cam.y, -cam.z), color);
-            }
-        }
-
-        if (drawOutline) {
-            VertexConsumer buffer = buffers.getBuffer(RenderLayers.getLines(depthTest));
-            for (ColoredBox coloredBox : boxes) {
-                int color = withAlpha(coloredBox.color(), outlineAlpha);
-                drawOutlinedBoxInternal(stack, buffer, coloredBox.box().move(-cam.x, -cam.y, -cam.z), color, lineWidth);
-            }
-        }
-
-        buffers.uploadAndDraw();
-    }
-
-    private static int withAlpha(Color color, float alpha) {
-        int a = Mth.clamp(Math.round(alpha * 255.0f), 0, 255);
-        return a << 24 | color.getRGB() & 0x00FFFFFF;
+        vcp.endBatch(layer);
     }
 
     private static void drawOutlinedBoxInternal(PoseStack matrices, VertexConsumer buffer, AABB box, int color, float lineWidth) {
@@ -480,9 +279,9 @@ public class RenderUtils {
     public static void drawLine3D(PoseStack stack, Vec3 from, Vec3 to, Color c, float lineWidth, boolean depthTest) {
         if (from.distanceToSqr(to) < 1.0E-6) return;
 
-        BufferSource bs = new BufferSource();
+        MultiBufferSource.BufferSource vcp = getVCP();
         RenderType layer = RenderLayers.getLines(depthTest);
-        VertexConsumer buffer = bs.getBuffer(layer);
+        VertexConsumer buffer = vcp.getBuffer(layer);
         PoseStack.Pose entry = stack.last();
 
         Vec3 cam = mc.getEntityRenderDispatcher().camera.position();
@@ -498,7 +297,7 @@ public class RenderUtils {
         buffer.addVertex(entry, x1, y1, z1).setColor(color).setNormal(entry, (float) dir.x, (float) dir.y, (float) dir.z).setLineWidth(lineWidth);
         buffer.addVertex(entry, x2, y2, z2).setColor(color).setNormal(entry, (float) dir.x, (float) dir.y, (float) dir.z).setLineWidth(lineWidth);
 
-        bs.uploadAndDraw();
+        vcp.endBatch(layer);
     }
 
     public static void drawBox(PoseStack stack, BlockPos bp, Color c, float lineWidth, boolean depthTest) {
@@ -607,7 +406,7 @@ public class RenderUtils {
         Vector4f center4 = new Vector4f(0, 0, 0, 1).mul(invProjection).mul(invView);
         center4.div(center4.w);
 
-        Vec3 camera = mc.gameRenderer.mainCamera().position();
+        Vec3 camera = mc.gameRenderer.getMainCamera().position();
         center = new Vec3(camera.x + center4.x, camera.y + center4.y, camera.z + center4.z);
     }
 
@@ -644,19 +443,33 @@ public class RenderUtils {
 
         Matrix4f glyphMatrix = matrix.last().pose();
 
-        BufferSource bs = new BufferSource();
+        MultiBufferSource.BufferSource vcp = getVCP();
         Font.DisplayMode displayMode = Font.DisplayMode.SEE_THROUGH;
 
         prepared.visit(new Font.GlyphVisitor() {
             @Override
-            public void acceptRenderable(TextRenderable renderable) {
-                VertexConsumer builder = bs.getBuffer(renderable.renderType(displayMode));
+            public void acceptGlyph(TextRenderable.Styled glyph) {
+                this.render(glyph);
+            }
+
+            @Override
+            public void acceptEffect(TextRenderable effect) {
+                this.render(effect);
+            }
+
+            private void render(TextRenderable renderable) {
+                VertexConsumer builder = vcp.getBuffer(renderable.renderType(displayMode));
                 renderable.render(glyphMatrix, builder, 15728880, false);
             }
         });
 
-        bs.uploadAndDraw();
+        vcp.endBatch();
 
         matrix.popPose();
+    }
+
+    public static MultiBufferSource.BufferSource getVCP()
+    {
+        return mc.renderBuffers().bufferSource();
     }
 }

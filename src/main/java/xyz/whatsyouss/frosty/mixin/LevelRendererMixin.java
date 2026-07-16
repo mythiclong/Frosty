@@ -1,5 +1,6 @@
 package xyz.whatsyouss.frosty.mixin;
 
+import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,13 +22,14 @@ import xyz.whatsyouss.frosty.events.impl.Render3DEvent;
 public class LevelRendererMixin
 {
     @Inject(
-            method = "render(Lcom/mojang/blaze3d/resource/GraphicsResourceAllocator;Lnet/minecraft/client/DeltaTracker;ZLnet/minecraft/client/renderer/state/level/CameraRenderState;Lorg/joml/Matrix4fc;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Vector4f;Z)V",
+            method = "renderLevel(Lcom/mojang/blaze3d/resource/GraphicsResourceAllocator;Lnet/minecraft/client/DeltaTracker;ZLnet/minecraft/client/renderer/state/level/CameraRenderState;Lorg/joml/Matrix4fc;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Vector4f;ZLnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;)V",
             at = @At("RETURN"))
     private void onRender(GraphicsResourceAllocator allocator,
                           DeltaTracker tickCounter, boolean renderBlockOutline,
                           CameraRenderState cameraState, Matrix4fc positionMatrix,
                           GpuBufferSlice gpuBufferSlice, Vector4f vector4f,
-                          boolean shouldRenderSky, CallbackInfo ci)
+                          boolean shouldRenderSky, ChunkSectionsToRender chunkSectionsToRender,
+                          CallbackInfo ci)
     {
         PoseStack matrixStack = new PoseStack();
         matrixStack.mulPose(positionMatrix);

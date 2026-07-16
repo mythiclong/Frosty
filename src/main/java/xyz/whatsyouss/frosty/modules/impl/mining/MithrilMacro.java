@@ -97,7 +97,7 @@ public class MithrilMacro extends Module {
             mc.player.getInventory().setSelectedSlot(toolSlot);
 
         if (!mc.mouseHandler.isMouseGrabbed() && !aimCheck.isEnabled) {
-            if (mc.gui.screen() == null) {
+            if (mc.screen == null) {
                 mc.mouseHandler.grabMouse();
                 IKeyMapping.get(mc.options.keyAttack).setDown(true);
             }

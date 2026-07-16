@@ -186,7 +186,7 @@ public class QMaths extends Module {
         if (!active
                 || mc.player == null
                 || mc.getConnection() == null
-                || !(mc.gui.screen() instanceof AbstractContainerScreen<?> screen)) return; // 💡 注意：mc.gui.screen() 在很多高版本里直接点 mc.screen 即可
+                || !(mc.screen instanceof AbstractContainerScreen<?> screen)) return; // 💡 注意：mc.gui.screen() 在很多高版本里直接点 mc.screen 即可
 
         if (!screen.getTitle().getString().contains("Enter the answer!")) return;
 
@@ -228,7 +228,7 @@ public class QMaths extends Module {
     }
 
     private void clickSlot(int slotId) {
-        if (!(mc.gui.screen() instanceof AbstractContainerScreen<?> screen)) return;
+        if (!(mc.screen instanceof AbstractContainerScreen<?> screen)) return;
         AbstractContainerMenu handler = screen.getMenu();
 
         if (mc.gameMode != null) {

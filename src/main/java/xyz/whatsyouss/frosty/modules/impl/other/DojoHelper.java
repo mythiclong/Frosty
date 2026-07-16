@@ -205,7 +205,7 @@ public class DojoHelper extends Module {
                 && event.oldState != null
                 && event.newState != null
                 && event.oldState.isAir()
-                && event.newState.getBlock() == Blocks.WOOL.lime();
+                && event.newState.getBlock() == Blocks.LIME_WOOL;
     }
 
     private boolean isWithinPlayerCube(BlockPos pos, int range) {

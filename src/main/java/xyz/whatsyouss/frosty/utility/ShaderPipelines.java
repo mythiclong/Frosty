@@ -2,7 +2,6 @@ package xyz.whatsyouss.frosty.utility;
 
 import java.util.Optional;
 
-import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
@@ -10,6 +9,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline.Snippet;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 
@@ -20,14 +20,15 @@ public enum ShaderPipelines {
      * Similar to the RENDERTYPE_LINES Snippet, but without fog.
      */
     public static final Snippet FOGLESS_LINES_SNIPPET = RenderPipeline
-            .builder(RenderPipelines.LINES_SNIPPET)
+            .builder(RenderPipelines.MATRICES_FOG_SNIPPET,
+                    RenderPipelines.GLOBALS_SNIPPET)
             .withVertexShader(Identifier.parse("frosty:fogless_lines"))
             .withFragmentShader(Identifier.parse("frosty:fogless_lines"))
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withCull(false)
-            .withVertexBinding(0,
-                    DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH)
-            .withPrimitiveTopology(PrimitiveTopology.LINES).buildSnippet();
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH,
+                    VertexFormat.Mode.LINES)
+            .buildSnippet();
 
     /**
      * Similar to the LINES ShaderPipeline, but with no fog.
@@ -75,30 +76,19 @@ public enum ShaderPipelines {
             .register(copyWithoutDepth(RenderPipelines.ENTITY_TRANSLUCENT,
                     Identifier.parse("frosty:pipeline/entity_translucent_no_depth")));
 
-    private static RenderPipeline copyWithoutDepth(RenderPipeline source, Identifier location) {
+    public static RenderPipeline copyWithoutDepth(RenderPipeline source, Identifier location) {
         RenderPipeline.Builder builder = RenderPipeline.builder()
                 .withLocation(location)
                 .withVertexShader(source.getVertexShader())
                 .withFragmentShader(source.getFragmentShader())
+                .withVertexFormat(source.getVertexFormat(), source.getVertexFormatMode())
                 .withCull(source.isCull())
-                .withPrimitiveTopology(source.getPrimitiveTopology())
+                .withColorTargetState(source.getColorTargetState())
                 .withDepthStencilState(Optional.empty());
-
-        ColorTargetState[] colorTargetStates = source.getColorTargetStates();
-        for (int i = 0; i < colorTargetStates.length; i++) {
-            ColorTargetState state = colorTargetStates[i];
-            if (state == null) {
-                builder.withUnusedColorTargetState(i);
-            } else {
-                builder.withColorTargetState(i, state);
-            }
-        }
-
-        for (int i = 0; i < source.getVertexFormatBindings().length; i++) {
-            builder.withVertexBinding(i, source.getVertexFormatBinding(i));
-        }
-        source.getBindGroupLayouts().forEach(builder::withBindGroupLayout);
-
+        source.getSamplers().forEach(builder::withSampler);
+        source.getUniforms().forEach(uniform ->
+                builder.withUniform(uniform.name(), uniform.type())
+        );
         return builder.build();
     }
 }

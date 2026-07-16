@@ -42,7 +42,7 @@ public class LanguageSelectScreen extends Screen {
         }
         ConfigManager.completeLanguagePrompt();
         ConfigManager.saveConfig();
-        mc.gui.setScreen(nextScreen);
+        mc.setScreen(nextScreen);
     }
 
     @Override

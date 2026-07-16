@@ -47,7 +47,7 @@ public class GuiMove extends Module {
             mc.player.setSprinting(false);
         }
 
-        if (setMotion && ticks < 10 && !(mc.gui.screen() instanceof ClickGui)) {
+        if (setMotion && ticks < 10 && !(mc.screen instanceof ClickGui)) {
             if (mode.getValue() == 2) {
                 ++ticks;
                 mc.options.keyUp.setDown(false);
@@ -126,12 +126,12 @@ public class GuiMove extends Module {
     }
 
     private boolean guiCheck() {
-        if (mc.gui.screen() == null || mc.gui.screen() instanceof ChatScreen) {
+        if (mc.screen == null || mc.screen instanceof ChatScreen) {
             return false;
         }
 
-        if (mc.gui.screen() instanceof ClickGui) {
-            ClickGui clickGui = (ClickGui) mc.gui.screen();
+        if (mc.screen instanceof ClickGui) {
+            ClickGui clickGui = (ClickGui) mc.screen;
             for (ModuleComponent moduleComponent : clickGui.getModuleComponents()) {
                 if (moduleComponent.isExpanded()) {
                     for (Component component : moduleComponent.getSettingComponents()) {

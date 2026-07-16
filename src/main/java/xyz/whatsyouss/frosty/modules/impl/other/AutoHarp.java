@@ -45,7 +45,7 @@ public class AutoHarp extends Module {
         if (!Utils.nullCheck()) {
             return;
         }
-        if (mc.gui.screen() instanceof ContainerScreen genericContainerScreen) {
+        if (mc.screen instanceof ContainerScreen genericContainerScreen) {
             String title = genericContainerScreen.getTitle().getString();
 
             if (!title.startsWith("Harp -")) {

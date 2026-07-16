@@ -34,7 +34,7 @@ public class ScrollableTooltips extends Module {
 
     @EventHandler
     public void onPreUpdate(PreUpdateEvent event) {
-        Screen current = mc.gui.screen();
+        Screen current = mc.screen;
         if (current != lastScreen) {
             offset = 0f;
             scale = 1f;
@@ -67,7 +67,7 @@ public class ScrollableTooltips extends Module {
     }
 
     private boolean isHoveringItemTooltip() {
-        if (!(mc.gui.screen() instanceof AbstractContainerScreen<?> screen)) {
+        if (!(mc.screen instanceof AbstractContainerScreen<?> screen)) {
             return false;
         }
 

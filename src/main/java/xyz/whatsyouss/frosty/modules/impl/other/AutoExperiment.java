@@ -32,8 +32,7 @@ import xyz.whatsyouss.frosty.settings.impl.SliderSetting;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.minecraft.world.item.Items.DYED_TERRACOTTA;
-import static net.minecraft.world.item.Items.STAINED_GLASS;
+import static net.minecraft.world.item.Items.*;
 
 public class AutoExperiment extends Module {
 
@@ -42,14 +41,28 @@ public class AutoExperiment extends Module {
     private static final Object2ObjectMap<Item, Item> TERRACOTTA_TO_GLASS = Object2ObjectMaps.unmodifiable(
             new Object2ObjectArrayMap<>(
                     new Item[]{
-                            DYED_TERRACOTTA.red(), DYED_TERRACOTTA.orange(), DYED_TERRACOTTA.yellow(), DYED_TERRACOTTA.lime(),
-                            DYED_TERRACOTTA.green(), DYED_TERRACOTTA.cyan(), DYED_TERRACOTTA.lightBlue(), DYED_TERRACOTTA.blue(),
-                            DYED_TERRACOTTA.purple(), DYED_TERRACOTTA.pink()
+                            RED_TERRACOTTA,
+                            ORANGE_TERRACOTTA,
+                            YELLOW_TERRACOTTA,
+                            LIME_TERRACOTTA,
+                            GREEN_TERRACOTTA,
+                            CYAN_TERRACOTTA,
+                            LIGHT_BLUE_TERRACOTTA,
+                            BLUE_TERRACOTTA,
+                            PURPLE_TERRACOTTA,
+                            PINK_TERRACOTTA
                     },
                     new Item[]{
-                            STAINED_GLASS.red(), STAINED_GLASS.orange(), STAINED_GLASS.yellow(), STAINED_GLASS.lime(),
-                            STAINED_GLASS.green(), STAINED_GLASS.cyan(), STAINED_GLASS.lightBlue(), STAINED_GLASS.blue(),
-                            STAINED_GLASS.purple(), STAINED_GLASS.pink()
+                            RED_STAINED_GLASS,
+                            ORANGE_STAINED_GLASS,
+                            YELLOW_STAINED_GLASS,
+                            LIME_STAINED_GLASS,
+                            GREEN_STAINED_GLASS,
+                            CYAN_STAINED_GLASS,
+                            LIGHT_BLUE_STAINED_GLASS,
+                            BLUE_STAINED_GLASS,
+                            PURPLE_STAINED_GLASS,
+                            PINK_STAINED_GLASS
                     }
             )
     );
@@ -76,7 +89,7 @@ public class AutoExperiment extends Module {
 
     @EventHandler
     public void onPreUpdate(PreUpdateEvent event) {
-        if (mc.gui.screen() instanceof ContainerScreen genericContainerScreen) {
+        if (mc.screen instanceof ContainerScreen genericContainerScreen) {
             String title = genericContainerScreen.getTitle().getString();
             if (!currentScreenTitle.equals(title)) {
                 currentScreenTitle = title;

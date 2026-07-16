@@ -45,7 +45,7 @@ public abstract class LoadingOverlayMixin {
         float fadeOut = fadeOutStart > -1L ? (now - fadeOutStart) / 1000.0f : -1.0f;
         if (fadeOut >= 2.0f) {
             initialLaunchComplete = true;
-            minecraft.gui.setOverlay(null);
+            minecraft.setOverlay(null);
             ci.cancel();
             return;
         }

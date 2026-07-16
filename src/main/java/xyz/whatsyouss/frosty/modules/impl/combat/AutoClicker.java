@@ -84,7 +84,7 @@ public class AutoClicker extends Module {
             return;
         }
 
-        if (mc.gui.screen() != null) {
+        if (mc.screen != null) {
             return;
         }
 
