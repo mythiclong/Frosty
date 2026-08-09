@@ -63,7 +63,7 @@ public class Hideonleaf extends Module {
         }
 
         Map<String, String> location = Utils.getCurrentLocation();
-        if (!Objects.equals(location.get("Area"), "Galatea")) {
+        if (!Objects.equals(location.get("Area"), "Moonglade Marsh")) {
             return;
         }
 
@@ -82,7 +82,7 @@ public class Hideonleaf extends Module {
         }
 
         Map<String, String> location = Utils.getCurrentLocation();
-        if (!Objects.equals(location.get("Area"), "Galatea")) {
+        if (!Objects.equals(location.get("Area"), "Moonglade Marsh")) {
             return;
         }
 

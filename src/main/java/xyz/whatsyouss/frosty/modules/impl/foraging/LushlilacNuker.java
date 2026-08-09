@@ -31,7 +31,7 @@ public class LushlilacNuker extends Module {
             return;
         }
         Map<String, String> location = Utils.getCurrentLocation();
-        if (!Objects.equals(location.get("Area"), "Galatea")) {
+        if (!Objects.equals(location.get("Area"), "Moonglade Marsh")) {
             return;
         }
 
