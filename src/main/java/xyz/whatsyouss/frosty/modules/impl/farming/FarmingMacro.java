@@ -48,6 +48,7 @@ public class FarmingMacro extends Module {
     private boolean awaitingGrab = false;
     private boolean pestPaused = false;
     private int pestResumePt = 1;
+    private boolean pestCleanCompletedLap = false;
 
     private KeyMapping activeKey = null;
     private int hoeSlot = -1;
@@ -133,6 +134,7 @@ public class FarmingMacro extends Module {
         preWarpPos = null;
         activeKey = null;
         awaitingGrab = true;
+        pestCleanCompletedLap = false;
 
         releaseAll();
         prepareMouseForMacroStart();
@@ -373,6 +375,8 @@ public class FarmingMacro extends Module {
         if (pestPaused) return;
         pestPaused = true;
         pestResumePt = targetIndex;
+        pestCleanCompletedLap = rewarpOnly.isToggled()
+                && pestResumePt >= waypoints.size();
         releaseAll();
 
         boolean useRewarp = rewarpOnly.isToggled();
@@ -392,10 +396,14 @@ public class FarmingMacro extends Module {
         pestPaused = false;
 
         if (rewarpOnly.isToggled()) {
+            if (pestCleanCompletedLap) {
+                lapCount++;
+            }
             targetIndex = 1;
         } else {
             targetIndex = Math.max(1, Math.min(pestResumePt, waypoints.size() - 1));
         }
+        pestCleanCompletedLap = false;
 
         hoeSlot = findHoeSlot();
         if (hoeSlot != -1) mc.player.getInventory().setSelectedSlot(hoeSlot);
