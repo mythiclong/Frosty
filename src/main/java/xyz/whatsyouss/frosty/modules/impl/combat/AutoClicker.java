@@ -24,6 +24,7 @@ public class AutoClicker extends Module {
     private ButtonSetting breakBlocks, inventoryFill;
 
     private String[] modes = new String[]{"Hold", "Toggle"};
+    private String[] CNmodes = new String[]{"按住", "常开"};
 
     private int leftClickTimer;
 
@@ -33,9 +34,9 @@ public class AutoClicker extends Module {
     public AutoClicker() {
         super("AutoClicker", "自动点击", category.Combat);
 
-        this.registerSetting(mode = new SelectSetting("Mode", 0, modes));
-        this.registerSetting(cps = new SliderSetting("CPS", 12, 15, 1, 20, 1));
-        this.registerSetting(breakBlocks = new ButtonSetting("Break blocks", false));
+        this.registerSetting(mode = new SelectSetting("Mode", "模式", 0, modes, CNmodes));
+        this.registerSetting(cps = new SliderSetting("CPS", 12, 15, 1, 20, 1, "每秒点击次数"));
+        this.registerSetting(breakBlocks = new ButtonSetting("Break blocks", "允许破坏方块", false));
 //        this.registerSetting(inventoryFill = new ButtonSetting("Inventory fill", true));
     }
 

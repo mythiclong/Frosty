@@ -9,6 +9,7 @@ import xyz.whatsyouss.frosty.events.impl.MouseScrollEvent;
 import xyz.whatsyouss.frosty.events.impl.PreUpdateEvent;
 import xyz.whatsyouss.frosty.mixin.accessor.AbstractContainerScreenAccessor;
 import xyz.whatsyouss.frosty.modules.Module;
+import xyz.whatsyouss.frosty.modules.impl.client.UI;
 import xyz.whatsyouss.frosty.utility.Utils;
 
 public class ScrollableTooltips extends Module {
@@ -29,6 +30,9 @@ public class ScrollableTooltips extends Module {
 
     @Override
     public String getDesc() {
+        if (UI.lang.getValue() == 1) {
+            return "滚轮 调整位置\n\nCtrl + 滚轮 调整大小";
+        }
         return "Scroll adjust position\n\nCtrl + Scroll adjust size";
     }
 

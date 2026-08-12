@@ -9,29 +9,35 @@ import org.lwjgl.glfw.GLFW;
 import xyz.whatsyouss.frosty.events.impl.KeyEvent;
 import xyz.whatsyouss.frosty.events.impl.PreUpdateEvent;
 import xyz.whatsyouss.frosty.modules.Module;
+import xyz.whatsyouss.frosty.modules.impl.client.UI;
 import xyz.whatsyouss.frosty.settings.impl.SelectSetting;
 import xyz.whatsyouss.frosty.utility.Input;
 import xyz.whatsyouss.frosty.utility.Utils;
 
 public class FreeLook extends Module {
 
-    public static boolean freelooking;
+    private String[] modes = new String[]{"Toggle", "Hold"};
+    private String[] CNmodes = new String[]{"开启", "按住"};
+
     public SelectSetting mode;
+
+    public static boolean freelooking;
     public float cameraYaw;
     public float cameraPitch;
-    private String[] modes = new String[]{"Toggle", "Hold"};
     private int pers;
     private boolean gotPers, setPers;
-
 
     public FreeLook() {
         super("FreeLook", "自由视角", category.Render, InputConstants.KEY_LALT);
 
-        this.registerSetting(mode = new SelectSetting("Mode", 0, modes));
+        this.registerSetting(mode = new SelectSetting("Mode", "模式", 0, modes, CNmodes));
     }
 
     @Override
     public String getDesc() {
+        if (UI.lang.getValue() == 1) {
+            return "'按住' 模式需要保持模块开启";
+        }
         return "mode 'Hold' needs module enabled";
     }
 

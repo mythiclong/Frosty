@@ -15,6 +15,8 @@ import xyz.whatsyouss.frosty.utility.Utils;
 public class AutoHarp extends Module {
 
     private String[] modes = new String[]{"Normal", "Predict"};
+    private String[] CNmodes = new String[]{"普通", "预测"};
+
     private SelectSetting mode;
     private SliderSetting delay, doubleClickDelay;
 
@@ -30,9 +32,9 @@ public class AutoHarp extends Module {
     public AutoHarp() {
         super("AutoHarp", "自动竖琴", category.Other);
 
-        this.registerSetting(mode = new SelectSetting("Mode", 0, modes));
-        this.registerSetting(delay = new SliderSetting("Delay", "ms", 225, 100, 500, 25));
-        this.registerSetting(doubleClickDelay = new SliderSetting("Double click delay", "ms", 350, 100, 500, 25));
+        this.registerSetting(mode = new SelectSetting("Mode", "模式", 0, modes, CNmodes));
+        this.registerSetting(delay = new SliderSetting("Delay", "ms", 225, 100, 500, 25, "延迟"));
+        this.registerSetting(doubleClickDelay = new SliderSetting("Double click delay", "ms", 350, 100, 500, 25, "连击延迟"));
     }
 
     @Override

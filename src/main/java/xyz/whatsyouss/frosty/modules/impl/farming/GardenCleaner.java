@@ -28,6 +28,7 @@ public class GardenCleaner extends Module {
     private ButtonSetting spruce;
 
     private String[] modes = new String[]{"Normal", "Instant"};
+    private String[] CNmodes = new String[]{"发包", "急迫"};
 
     private final int radius = 5;
     private final List<Item> PICKAXES = List.of(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.GOLDEN_PICKAXE, Items.DIAMOND_PICKAXE);
@@ -43,9 +44,9 @@ public class GardenCleaner extends Module {
     public GardenCleaner() {
         super("GardenCleaner", "花园清理", category.Farming);
 
-        this.registerSetting(mode = new SelectSetting("Mode", 1, modes));
-        this.registerSetting(bps = new SliderSetting("BPS", 10 ,1, 15, 1));
-        this.registerSetting(spruce = new ButtonSetting("Spruce", false));
+        this.registerSetting(mode = new SelectSetting("Mode", "模式", 1, modes, CNmodes));
+        this.registerSetting(bps = new SliderSetting("BPS", 10 ,1, 15, 1, "每秒破坏数量"));
+        this.registerSetting(spruce = new ButtonSetting("Spruce", "云杉障碍物", false));
     }
 
     @Override

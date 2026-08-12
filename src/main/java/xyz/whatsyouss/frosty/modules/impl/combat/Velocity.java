@@ -15,12 +15,12 @@ public class Velocity extends Module {
     private SliderSetting vertical;
     private ButtonSetting cancelExplosion;
 
-
     public Velocity() {
         super("Velocity", "反击退", category.Combat);
-        this.registerSetting(horizontal = new SliderSetting("Horizontal", 0.0, 0.0, 100.0, 1.0));
-        this.registerSetting(vertical = new SliderSetting("Vertical", 0.0, 0.0, 100.0, 1.0));
-        this.registerSetting(cancelExplosion = new ButtonSetting("00 Explosion", true));
+
+        this.registerSetting(horizontal = new SliderSetting("Horizontal", 0.0, 0.0, 100.0, 1.0, "水平"));
+        this.registerSetting(vertical = new SliderSetting("Vertical", 0.0, 0.0, 100.0, 1.0, "垂直"));
+        this.registerSetting(cancelExplosion = new ButtonSetting("00 Explosion", "取消爆炸击退", true));
     }
 
     @EventHandler

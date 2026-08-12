@@ -78,28 +78,56 @@ public class RenderUtils {
     public static void drawRoundedRect(GuiGraphicsExtractor ctx,
                                        float x, float y, float width, float height,
                                        float radius, int color) {
-        float r = Math.min(radius, Math.min(width / 2f, height / 2f));
-        ctx.fill((int)(x + r),     (int) y,         (int)(x + width - r), (int)(y + height),     color);
-        ctx.fill((int) x,          (int)(y + r),     (int)(x + r),         (int)(y + height - r), color);
-        ctx.fill((int)(x+width-r), (int)(y + r),     (int)(x + width),     (int)(y + height - r), color);
-        fillArc(ctx, x + r,         y + r,          r, 180, 90, color);
-        fillArc(ctx, x + width - r, y + r,          r, 270, 90, color);
-        fillArc(ctx, x + width - r, y + height - r, r,   0, 90, color);
-        fillArc(ctx, x + r,         y + height - r, r,  90, 90, color);
+        int left = (int) x;
+        int top = (int) y;
+        int right = (int) (x + width);
+        int bottom = (int) (y + height);
+        int roundedRadius = Math.max(0, Math.min((int) radius,
+                Math.min((right - left) / 2, (bottom - top) / 2)));
+
+        for (int row = top; row < bottom; row++) {
+            int inset = roundedInset(row - top, bottom - top, roundedRadius);
+            ctx.fill(left + inset, row, right - inset, row + 1, color);
+        }
     }
 
     public static void drawRoundedBorder(GuiGraphicsExtractor ctx,
                                          float x, float y, float width, float height,
                                          float radius, int color) {
-        float r = Math.min(radius, Math.min(width / 2f, height / 2f));
-        ctx.fill((int)(x + r),       (int) y,           (int)(x + width - r), (int)(y + 1),          color);
-        ctx.fill((int)(x + r),       (int)(y+height-1), (int)(x + width - r), (int)(y + height),     color);
-        ctx.fill((int) x,            (int)(y + r),       (int)(x + 1),         (int)(y + height - r), color);
-        ctx.fill((int)(x+width-1),   (int)(y + r),       (int)(x + width),     (int)(y + height - r), color);
-        outlineArc(ctx, x + r,         y + r,          r, 180, 90, color);
-        outlineArc(ctx, x + width - r, y + r,          r, 270, 90, color);
-        outlineArc(ctx, x + width - r, y + height - r, r,   0, 90, color);
-        outlineArc(ctx, x + r,         y + height - r, r,  90, 90, color);
+        int left = (int) x;
+        int top = (int) y;
+        int right = (int) (x + width);
+        int bottom = (int) (y + height);
+        int roundedRadius = Math.max(0, Math.min((int) radius,
+                Math.min((right - left) / 2, (bottom - top) / 2)));
+
+        for (int row = top; row < bottom; row++) {
+            int outerInset = roundedInset(row - top, bottom - top, roundedRadius);
+            if (row == top || row == bottom - 1) {
+                ctx.fill(left + outerInset, row, right - outerInset, row + 1, color);
+                continue;
+            }
+
+            int innerInset = roundedInset(row - top - 1, bottom - top - 2,
+                    Math.max(0, roundedRadius - 1));
+            int outerLeft = left + outerInset;
+            int outerRight = right - outerInset;
+            int innerLeft = left + 1 + innerInset;
+            int innerRight = right - 1 - innerInset;
+            ctx.fill(outerLeft, row, Math.min(innerLeft, outerRight), row + 1, color);
+            ctx.fill(Math.max(innerRight, outerLeft), row, outerRight, row + 1, color);
+        }
+    }
+
+    private static int roundedInset(int row, int height, int radius) {
+        if (radius <= 0 || row >= radius && row < height - radius) {
+            return 0;
+        }
+
+        float centerOffset = row < radius ? radius - row - 0.5f
+                : row - (height - radius) + 0.5f;
+        return Math.max(0, (int) Math.ceil(radius - Math.sqrt(radius * radius
+                - centerOffset * centerOffset)));
     }
 
     public static void drawCircle(GuiGraphicsExtractor ctx,

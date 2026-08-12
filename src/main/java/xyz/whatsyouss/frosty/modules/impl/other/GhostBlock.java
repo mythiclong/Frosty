@@ -27,7 +27,7 @@ public class GhostBlock extends Module {
     public GhostBlock() {
         super("GhostBlock", "幽灵方块", category.Other);
 
-        this.registerSetting(range = new SliderSetting("Range", 8, 5, 15, 1));
+        this.registerSetting(range = new SliderSetting("Range", 8, 5, 15, 1, "距离"));
     }
 
     @Override

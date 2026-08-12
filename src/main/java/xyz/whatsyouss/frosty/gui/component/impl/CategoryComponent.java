@@ -1,6 +1,7 @@
 package xyz.whatsyouss.frosty.gui.component.impl;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import xyz.whatsyouss.frosty.gui.LiquidGlassStyle;
 import xyz.whatsyouss.frosty.gui.component.Component;
 import xyz.whatsyouss.frosty.modules.Module;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
@@ -53,12 +54,17 @@ public class CategoryComponent extends Component {
             color = isLight ? new Color(180, 180, 180).getRGB() : new Color(80, 80, 80).getRGB();
         }
 
-        context.fill((int) x, (int) y, (int) (x + width), (int) (y + height), color);
+        if (LiquidGlassStyle.isEnabled()) {
+            LiquidGlassStyle.drawControl(context, x, y, width, height, selected, isHovered);
+        } else {
+            context.fill((int) x, (int) y, (int) (x + width), (int) (y + height), color);
+        }
         String displayName = UI.lang.getValue() == 1 ? getChineseName(category) : category.name();
 
         context.text(mc.font, net.minecraft.network.chat.Component.literal(displayName),
                 (int) (x + width / 2 - (float) mc.font.width(displayName) / 2),
-                (int) (y + height / 2 - 4), isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
+                (int) (y + height / 2 - 4), LiquidGlassStyle.isEnabled()
+                        ? LiquidGlassStyle.textColor() : isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
     }
 
     @Override

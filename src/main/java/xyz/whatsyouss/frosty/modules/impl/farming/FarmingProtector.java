@@ -22,7 +22,7 @@ public class FarmingProtector extends Module {
     public FarmingProtector() {
         super("FarmingProtector", "农业保护", category.Farming);
 
-        this.registerSetting(restart = new ButtonSetting("Restart", true));
+        this.registerSetting(restart = new ButtonSetting("Restart", "自动重启", true));
         // this.registerSetting(movement = new ButtonSetting("Movement", true));
         // this.registerSetting(bps = new ButtonSetting("BPS", true));
         // this.registerSetting(sensitive = new SelectSetting("Sensitive", 1, sensitivity));

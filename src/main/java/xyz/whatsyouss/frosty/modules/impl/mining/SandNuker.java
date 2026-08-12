@@ -34,6 +34,7 @@ public class SandNuker extends Module {
     private SliderSetting bps;
 
     private String[] modes = new String[]{"Normal", "Instant"};
+    private String[] CNmodes = new String[]{"发包", "急迫"};
 
     private final int radius = 5;
     private final List<Block> targetBlocks = List.of(Blocks.SAND, Blocks.RED_SAND);
@@ -47,8 +48,8 @@ public class SandNuker extends Module {
     public SandNuker() {
         super("SandNuker", "沙子光环", category.Mining);
 
-        this.registerSetting(mode = new SelectSetting("Mode", 1, modes));
-        this.registerSetting(bps = new SliderSetting("BPS", 20 ,10, 20, 1));
+        this.registerSetting(mode = new SelectSetting("Mode", "模式", 1, modes, CNmodes));
+        this.registerSetting(bps = new SliderSetting("BPS", 20 ,10, 20, 1, "每秒破坏数量"));
     }
 
     @Override

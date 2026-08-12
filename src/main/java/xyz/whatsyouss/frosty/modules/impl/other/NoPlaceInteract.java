@@ -3,6 +3,7 @@ package xyz.whatsyouss.frosty.modules.impl.other;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import xyz.whatsyouss.frosty.modules.Module;
+import xyz.whatsyouss.frosty.modules.impl.client.UI;
 import xyz.whatsyouss.frosty.settings.impl.ButtonSetting;
 
 import java.util.Arrays;
@@ -28,11 +29,14 @@ public class NoPlaceInteract extends Module {
     public NoPlaceInteract() {
         super("NoPlaceInteract", "无放置交互", category.Other);
 
-        this.registerSetting(swing = new ButtonSetting("Swing", false));
+        this.registerSetting(swing = new ButtonSetting("Swing", "挥手动画", false));
     }
 
     @Override
     public String getDesc() {
+        if (UI.lang.getValue() == 1) {
+            return "阻止Skyblock物品在客户端被右键放置";
+        }
         return "Stop place placeable skyblock items clientside";
     }
 

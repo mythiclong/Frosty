@@ -37,9 +37,9 @@ public class Blink extends Module {
     public Blink() {
         super("Blink", "瞬移", category.Other);
 
-        this.registerSetting(maxTime = new SliderSetting("Max time", "s", 0.7, 0.1, 20, 0.1));
-        this.registerSetting(releaseTimer = new SliderSetting("Release timer", "s", 0.01, 0, 0.25, 0.01));
-        this.registerSetting(renderServerPos = new ButtonSetting("Render server pos", true));
+        this.registerSetting(maxTime = new SliderSetting("Max time", "s", 0.7, 0.1, 20, 0.1, "最大时间"));
+        this.registerSetting(releaseTimer = new SliderSetting("Release timer", "s", 0.01, 0, 0.25, 0.01, "释放速率"));
+        this.registerSetting(renderServerPos = new ButtonSetting("Render server pos", "显示服务端位置", true));
     }
 
     @Override

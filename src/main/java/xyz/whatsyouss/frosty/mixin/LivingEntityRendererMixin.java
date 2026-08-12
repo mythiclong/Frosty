@@ -21,7 +21,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.whatsyouss.frosty.Frosty;
 import xyz.whatsyouss.frosty.interfaces.IEntityRenderState;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
 import xyz.whatsyouss.frosty.modules.impl.other.AntiBot;
@@ -70,6 +69,6 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
 
     @Unique
     private boolean frosty$shouldRenderPlayerChams(Entity entity) {
-        return entity instanceof Player && ModuleManager.playerESP.isEnabled() && chams.isToggled() && (!ModuleManager.antiBot.isEnabled() || !AntiBot.isBot((Player) entity));
+        return entity instanceof Player && entity != mc.player && ModuleManager.playerESP.isEnabled() && chams.isToggled() && (!ModuleManager.antiBot.isEnabled() || !AntiBot.isBot((Player) entity));
     }
 }

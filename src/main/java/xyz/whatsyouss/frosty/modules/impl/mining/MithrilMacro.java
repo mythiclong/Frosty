@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 public class MithrilMacro extends Module {
 
     private final String[] mithrilTypes = new String[]{"Gray", "Prismarine", "Blue"};
+    private final String[] CNmithrilTypes = new String[]{"灰色", "海晶石类", "蓝色"};
 
     public SelectSetting prioritize;
     public SliderSetting rotateSmoothing, maxBreaktime;
@@ -48,12 +49,12 @@ public class MithrilMacro extends Module {
     public MithrilMacro() {
         super("MithrilMacro", "秘银宏", category.Mining);
 
-        this.registerSetting(prioritize = new SelectSetting("Prioritize", 0, mithrilTypes));
-        this.registerSetting(rotateSmoothing = new SliderSetting("Rotate smoothing", 0, 0, 5, 1));
-        this.registerSetting(smartRotation = new ButtonSetting("Smart Rotation", true));
-        this.registerSetting(maxBreaktime = new SliderSetting("Max Breaktime", "s", 1, 0.5, 7, 0.1));
-        this.registerSetting(titanium = new ButtonSetting("Titanium", true));
-        this.registerSetting(aimCheck = new ButtonSetting("Aim check", true));
+        this.registerSetting(prioritize = new SelectSetting("Prioritize", "优先", 0, mithrilTypes, CNmithrilTypes));
+        this.registerSetting(rotateSmoothing = new SliderSetting("Rotate smoothing", 0, 0, 5, 1, "转向丝滑度"));
+        this.registerSetting(smartRotation = new ButtonSetting("Smart Rotation", "转向优化", true));
+        this.registerSetting(maxBreaktime = new SliderSetting("Max Breaktime", "s", 1, 0.5, 7, 0.1, "最大破坏时间"));
+        this.registerSetting(titanium = new ButtonSetting("Titanium", "钛", true));
+        this.registerSetting(aimCheck = new ButtonSetting("Aim check", "只在瞄准时破坏", true));
     }
 
     @Override

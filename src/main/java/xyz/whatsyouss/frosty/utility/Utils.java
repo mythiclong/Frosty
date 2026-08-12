@@ -44,7 +44,7 @@ public class Utils {
     private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("frosty.json");
     public static boolean rendering3D = true;
     private static final Pattern SB_LEVEL_PATTERN = Pattern.compile("(§.)*\\[([0-9]+)\\](§.)*");
-    private static final ProjectionMatrixBuffer matrixBuffer = new ProjectionMatrixBuffer("frosty-projection-matrix");
+    private static ProjectionMatrixBuffer matrixBuffer;
 
     public static void addChatMessage(String message) {
         if (mc.player != null) {
@@ -378,6 +378,14 @@ public class Utils {
         return string.replaceAll("§.", "");
     }
 
+    private static ProjectionMatrixBuffer getMatrixBuffer() {
+        RenderSystem.assertOnRenderThread();
+        if (matrixBuffer == null) {
+            matrixBuffer = new ProjectionMatrixBuffer("frosty-projection-matrix");
+        }
+        return matrixBuffer;
+    }
+
     public static void unscaledProjection() {
         float width = mc.getWindow().getWidth();
         float height = mc.getWindow().getHeight();
@@ -386,7 +394,7 @@ public class Utils {
         proj.setupOrtho(-10, 100, width, height, true);
         var matrix = proj.getMatrix(new Matrix4f());
 
-        RenderSystem.setProjectionMatrix(matrixBuffer.getBuffer(matrix), ProjectionType.ORTHOGRAPHIC);
+        RenderSystem.setProjectionMatrix(getMatrixBuffer().getBuffer(matrix), ProjectionType.ORTHOGRAPHIC);
         RenderUtils.projection.set(matrix);
 
         rendering3D = false;
@@ -400,7 +408,7 @@ public class Utils {
         proj.setupOrtho(-10, 100, width, height, true);
         var matrix = proj.getMatrix(new Matrix4f());
 
-        RenderSystem.setProjectionMatrix(matrixBuffer.getBuffer(matrix), ProjectionType.PERSPECTIVE);
+        RenderSystem.setProjectionMatrix(getMatrixBuffer().getBuffer(matrix), ProjectionType.PERSPECTIVE);
         RenderUtils.projection.set(matrix);
 
         rendering3D = true;

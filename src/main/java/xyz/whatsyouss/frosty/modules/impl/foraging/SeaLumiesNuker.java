@@ -22,7 +22,8 @@ public class SeaLumiesNuker extends Module {
 
     public SeaLumiesNuker() {
         super("SeaLumiesNuker", "海黄瓜光环", category.Foraging);
-        this.registerSetting(range = new SliderSetting("Range", 4.2, 3, 6, 0.1));
+
+        this.registerSetting(range = new SliderSetting("Range", 4.2, 3, 6, 0.1, "范围"));
     }
 
     @Override

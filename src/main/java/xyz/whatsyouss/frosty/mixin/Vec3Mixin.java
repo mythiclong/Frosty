@@ -5,10 +5,10 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
-import xyz.whatsyouss.frosty.interfaces.IVec3d;
+import xyz.whatsyouss.frosty.interfaces.IVec3;
 
 @Mixin(Vec3.class)
-public abstract class Vec3Mixin implements IVec3d {
+public abstract class Vec3Mixin implements IVec3 {
     @Shadow @Final @Mutable public double x;
     @Shadow @Final @Mutable public double y;
     @Shadow @Final @Mutable public double z;

@@ -21,12 +21,15 @@ public class Cape extends Module {
     public Cape() {
         super("Cape", "披风", category.Client);
 
-        this.registerSetting(cape = new SelectSetting("Cape", 0, capes));
-        this.registerSetting(customCape = new InputSetting("File name", 16, ""));
+        this.registerSetting(cape = new SelectSetting("Cape", "披风", 0, capes, capes));
+        this.registerSetting(customCape = new InputSetting("File name", "文件名", 16, ""));
     }
 
     @Override
     public String getDesc() {
+        if (UI.lang.getValue() == 1) {
+            return "● 文件名: 如果无法加载，尝试小写字母\n\n可能需要重新打开模块以应用";
+        }
         return "● File name: if failed on load, try lowercase\n\nMight needs re-toggle to apply";
     }
 

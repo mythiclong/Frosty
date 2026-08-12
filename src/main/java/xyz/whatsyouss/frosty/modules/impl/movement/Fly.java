@@ -15,8 +15,8 @@ public class Fly extends Module {
     public Fly() {
         super("Fly", "飞行", category.Movement);
 
-        this.registerSetting(hs = new SliderSetting("Horizontal speed", 1, 0.1, 15, 0.1));
-        this.registerSetting(vs = new SliderSetting("Vertical speed", 1, 0.1, 15, 0.1));
+        this.registerSetting(hs = new SliderSetting("Horizontal speed", 1, 0.1, 15, 0.1, "水平速度"));
+        this.registerSetting(vs = new SliderSetting("Vertical speed", 1, 0.1, 15, 0.1, "垂直速度"));
     }
 
     @Override

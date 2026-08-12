@@ -24,10 +24,10 @@ public class PlayerESP extends Module {
     public PlayerESP() {
         super("PlayerESP", "玩家透视", category.Render);
 
-        this.registerSetting(expand = new ButtonSetting("Expand", true));
-        this.registerSetting(line = new ButtonSetting("Line", true));
-        this.registerSetting(fill = new ButtonSetting("Fill", false));
-        this.registerSetting(chams = new ButtonSetting("Chams", false));
+        this.registerSetting(expand = new ButtonSetting("Expand", "扩大", true));
+        this.registerSetting(line = new ButtonSetting("Line", "线", true));
+        this.registerSetting(fill = new ButtonSetting("Fill", "填充", false));
+        this.registerSetting(chams = new ButtonSetting("Chams", "实体", false));
     }
 
     @EventHandler

@@ -43,9 +43,10 @@ public class FrozenTreasure extends Module {
 
     public FrozenTreasure() {
         super("FrozenTreasure", "冰洞宝藏", category.Mining);
-        this.registerSetting(esp = new ButtonSetting("ESP", true));
-        this.registerSetting(nuker = new ButtonSetting("Nuker", false));
-        this.registerSetting(ignoreIcebait = new ButtonSetting("Ignore Ice Bait", true));
+
+        this.registerSetting(esp = new ButtonSetting("ESP", "透视", true));
+        this.registerSetting(nuker = new ButtonSetting("Nuker", "破坏", false));
+        this.registerSetting(ignoreIcebait = new ButtonSetting("Ignore Ice Bait", "忽略冰饵", true));
     }
 
     @Override

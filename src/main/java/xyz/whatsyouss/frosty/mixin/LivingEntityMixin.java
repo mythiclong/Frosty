@@ -38,8 +38,8 @@ public abstract class LivingEntityMixin extends EntityMixin {
         if (jumpEvent.getJumpVelocity() != this.getJumpPower()) {
             float f = jumpEvent.getJumpVelocity();
             if (f > 1.0E-5F) {
-                Vec3 vec3d = this.getDeltaMovement();
-                this.setDeltaMovement(new Vec3(vec3d.x, Math.max((double) f, vec3d.y), vec3d.z));
+                Vec3 Vec3 = this.getDeltaMovement();
+                this.setDeltaMovement(new Vec3(Vec3.x, Math.max((double) f, Vec3.y), Vec3.z));
 
                 if (this.isSprinting()) {
                     float yaw = (MoveFix.shouldApply() && (Object) this == Minecraft.getInstance().player)

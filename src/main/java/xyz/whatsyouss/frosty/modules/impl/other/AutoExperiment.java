@@ -84,7 +84,8 @@ public class AutoExperiment extends Module {
 
     public AutoExperiment() {
         super("AutoExperiment", "自动附魔桌", category.Other);
-        this.registerSetting(delay = new SliderSetting("Delay", 4, 2, 8, 1));
+
+        this.registerSetting(delay = new SliderSetting("Delay", 4, 2, 8, 1, "点击延迟"));
     }
 
     @EventHandler

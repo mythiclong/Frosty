@@ -17,8 +17,10 @@ import java.util.ArrayDeque;
 
 public class TPS extends Module {
 
-    private SelectSetting color;
     private String[] colors = new String[] {"Rainbow", "Cherry", "Cotton candy", "Flare", "Flower", "Gold", "Grayscale", "Royal", "Sky", "Vine"};
+    private String[] CNcolors = new String[] {"彩虹", "粉樱", "棉花糖", "炽焰", "繁花", "流金", "灰阶", "皇室蓝", "晴空", "青藤"};
+
+    private SelectSetting color;
 
     private final ArrayDeque<Long> packetIntervals = new ArrayDeque<>(10);
     private long lastPacketTime;
@@ -26,7 +28,8 @@ public class TPS extends Module {
 
     public TPS() {
         super("TPS", "服务器刻数", category.Render);
-        this.registerSetting(color = new SelectSetting("Color", 0, colors));
+
+        this.registerSetting(color = new SelectSetting("Color", "颜色", 0, colors, CNcolors));
     }
 
     @EventHandler

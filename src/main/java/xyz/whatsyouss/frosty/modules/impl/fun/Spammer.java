@@ -25,11 +25,11 @@ public class Spammer extends Module {
     public Spammer() {
         super("Spammer", "刷屏", category.Fun);
 
-        this.registerSetting(message1 = new InputSetting("Message 1", 25, "Frosty - Free 1.21.10 Skyblock Client", "/p xxx"));
-        this.registerSetting(messageTwo = new ButtonSetting("Message two", false));
-        this.registerSetting(message2 = new InputSetting("Message 2", 25, "", "/p disband"));
-        this.registerSetting(delay = new SliderSetting("Delay", "ms", 3000, 100, 10000, 100));
-        this.registerSetting(antiDupe = new ButtonSetting("Anti Duplicate", true));
+        this.registerSetting(message1 = new InputSetting("Message 1", "消息 1", 25, "Frosty - Free 26.x Skyblock Client", "/p xxx"));
+        this.registerSetting(messageTwo = new ButtonSetting("Message two", "消息循环", false));
+        this.registerSetting(message2 = new InputSetting("Message 2", "消息 2", 5, "", "/p disband"));
+        this.registerSetting(delay = new SliderSetting("Delay", "ms", 3000, 100, 10000, 100, "消息延迟"));
+        this.registerSetting(antiDupe = new ButtonSetting("Anti Duplicate", "防重复", true));
     }
 
     @Override

@@ -3,7 +3,7 @@ package xyz.whatsyouss.frosty.interfaces;
 import net.minecraft.core.Vec3i;
 import org.joml.Vector3d;
 
-public interface IVec3d {
+public interface IVec3 {
     void frosty$set(double x, double y, double z);
 
     default void frosty$set(Vec3i vec) {

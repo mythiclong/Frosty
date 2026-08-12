@@ -3,6 +3,7 @@ package xyz.whatsyouss.frosty.gui.component.impl;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.FormattedCharSequence;
 import xyz.whatsyouss.frosty.gui.ClickGui;
+import xyz.whatsyouss.frosty.gui.LiquidGlassStyle;
 import xyz.whatsyouss.frosty.modules.Module;
 import xyz.whatsyouss.frosty.gui.component.Component;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
@@ -60,14 +61,22 @@ public class ModuleComponent extends Component {
     public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         isHovered = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
 
-        boolean isLight = ModuleManager.ui.clickGuiColor.getValue() == 0;
+        boolean isLight = UI.clickGuiColor.getValue() == 0;
+        boolean isDangerous = ModuleManager.isDangerousModule(this.module);
 
-        RenderUtils.drawBorder(context, (int) x, (int) y, (int) width, (int) height, isLight ? 0xFF000000 : 0xFFFFFFFF);
         int bgColor = isLight ? (module.isEnabled() ? new Color(220, 220, 255).getRGB() : new Color(240,240, 240).getRGB()) : (module.isEnabled() ? new Color(100, 100, 180).getRGB() : new Color(60,60, 60).getRGB());
-        context.fill((int) x + 1, (int) y + 1, (int) (x + width - 1), (int) (y + height - 1), bgColor);
-        context.fill((int) x + 2, (int) (y + height), (int) (x + width - 2), (int) (y + height + 2), isLight ? 0x60000000 : 0x60FFFFFF);
+        if (LiquidGlassStyle.isEnabled()) {
+            LiquidGlassStyle.drawControl(context, x, y, width, height, module.isEnabled(), isHovered);
+            if (isDangerous) {
+                RenderUtils.drawRoundedBorder(context, x, y, width, height, 5, 0xFFB01235);
+            }
+        } else {
+            RenderUtils.drawBorder(context, (int) x, (int) y, (int) width, (int) height, isDangerous ? 0xFFB01235 : (isLight ? 0xFF000000 : 0xFFFFFFFF));
+            context.fill((int) x + 1, (int) y + 1, (int) (x + width - 1), (int) (y + height - 1), bgColor);
+            context.fill((int) x + 2, (int) (y + height), (int) (x + width - 2), (int) (y + height + 2), isLight ? 0x60000000 : 0x60FFFFFF);
+        }
 
-        context.text(mc.font, module.getTransName(), (int) (x + 5), (int) (y + height / 2 - 4), isLight ? (module.isHidden() ? (new Color(255, 100, 100).getRGB()) : Color.BLACK.getRGB()) : (module.isHidden() ? (new Color(255, 100, 100).getRGB()) : Color.WHITE.getRGB()), false);
+        context.text(mc.font, module.getTransName(), (int) (x + 5), (int) (y + height / 2 - 4), module.isHidden() ? new Color(255, 100, 100).getRGB() : LiquidGlassStyle.isEnabled() ? LiquidGlassStyle.textColor() : isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
 
         boolean showDescription = false;
         boolean descHovered = false;
@@ -81,8 +90,12 @@ public class ModuleComponent extends Component {
                     mouseY >= descButtonY && mouseY <= descButtonY + descButtonHeight;
 
             int descButtonColor = isLight ? (descHovered ? new Color(200, 200, 200).getRGB() : new Color(180, 180, 180).getRGB()) : (descHovered ? new Color(100, 100, 100).getRGB() : new Color(180, 180, 180).getRGB());
-            context.fill(descButtonX, descButtonY, descButtonX + descButtonWidth, descButtonY + descButtonHeight, descButtonColor);
-            context.text(mc.font, net.minecraft.network.chat.Component.literal("?"), descButtonX + 6, descButtonY + (descButtonHeight / 2 - 4), isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
+            if (LiquidGlassStyle.isEnabled()) {
+                LiquidGlassStyle.drawControl(context, descButtonX, descButtonY, descButtonWidth, descButtonHeight, false, descHovered);
+            } else {
+                context.fill(descButtonX, descButtonY, descButtonX + descButtonWidth, descButtonY + descButtonHeight, descButtonColor);
+            }
+            context.text(mc.font, net.minecraft.network.chat.Component.literal("?"), descButtonX + 6, descButtonY + (descButtonHeight / 2 - 4), LiquidGlassStyle.isEnabled() ? LiquidGlassStyle.textColor() : isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
 
             showDescription = descHovered;
         }
@@ -92,7 +105,12 @@ public class ModuleComponent extends Component {
             for (Component component : settingComponents) {
                 if (component.isVisible()) {
                     component.updatePosition(x + 5, currentY);
-                    context.fill((int) (x + 5), (int) currentY, (int) (x + width - 5), (int) (currentY + component.getHeight()), isLight ? new Color(230, 230, 230).getRGB() : new Color(70, 70, 70).getRGB());
+                    if (LiquidGlassStyle.isEnabled()) {
+                        LiquidGlassStyle.drawControl(context, x + 5, currentY, width - 10,
+                                component.getHeight(), false, false);
+                    } else {
+                        context.fill((int) (x + 5), (int) currentY, (int) (x + width - 5), (int) (currentY + component.getHeight()), isLight ? new Color(230, 230, 230).getRGB() : new Color(70, 70, 70).getRGB());
+                    }
                     component.render(context, mouseX, mouseY, delta);
                     currentY += component.getHeight() + 2;
                 }

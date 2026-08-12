@@ -5,6 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import xyz.whatsyouss.frosty.modules.Module;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
+import xyz.whatsyouss.frosty.modules.impl.client.UI;
 import xyz.whatsyouss.frosty.settings.impl.InputSetting;
 
 import java.util.regex.Matcher;
@@ -21,12 +22,15 @@ public class NickHider extends Module {
     public NickHider() {
         super("NickHider", "匿名保护", category.Render);
 
-        this.registerSetting(name = new InputSetting("Nick Name", 16, "You"));
-        this.registerSetting(serverNick = new InputSetting("Server Nick", 16, ""));
+        this.registerSetting(name = new InputSetting("Nick Name", "匿名", 16, "You"));
+        this.registerSetting(serverNick = new InputSetting("Server Nick", "服务端匿名", 16, ""));
     }
 
     @Override
     public String getDesc() {
+        if (UI.lang.getValue() == 1) {
+            return "服务端匿名: 你从服务器得到的匿名 (/nick)";
+        }
         return "Server Nick: Your nick name by Server (/nick)";
     }
 
