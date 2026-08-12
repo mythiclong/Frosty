@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.Options;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import xyz.whatsyouss.frosty.events.impl.KeyEvent;
 import xyz.whatsyouss.frosty.events.impl.MouseButtonEvent;
@@ -15,6 +16,7 @@ import xyz.whatsyouss.frosty.gui.component.Component;
 import xyz.whatsyouss.frosty.gui.component.impl.InputComponent;
 import xyz.whatsyouss.frosty.gui.component.impl.ModuleComponent;
 import xyz.whatsyouss.frosty.modules.Module;
+import xyz.whatsyouss.frosty.settings.impl.ButtonSetting;
 import xyz.whatsyouss.frosty.settings.impl.SelectSetting;
 import xyz.whatsyouss.frosty.utility.Input;
 import xyz.whatsyouss.frosty.utility.Utils;
@@ -26,12 +28,18 @@ public class GuiMove extends Module {
 
     public boolean setMotion;
     public int ticks;
-    private SelectSetting mode;
+
     private String[] modes = new String[] {"Vanilla", "Motion", "Legit"};
+    private String[] CNmodes = new String[] {"原版", "减速", "合法"};
+
+    private SelectSetting mode;
+    private ButtonSetting inventoryOnly;
 
     public GuiMove() {
         super("GuiMove", "背包行走", category.Movement);
-        this.registerSetting(mode = new SelectSetting("Mode", 2, modes));
+
+        this.registerSetting(mode = new SelectSetting("Mode", "模式", 2, modes, CNmodes));
+        this.registerSetting(inventoryOnly = new ButtonSetting("Inventory only", "只在背包生效", true));
     }
 
     @EventHandler
@@ -127,6 +135,10 @@ public class GuiMove extends Module {
 
     private boolean guiCheck() {
         if (mc.gui.screen() == null || mc.gui.screen() instanceof ChatScreen) {
+            return false;
+        }
+
+        if (inventoryOnly.isToggled() && (!(mc.gui.screen() instanceof InventoryScreen)) && !(mc.gui.screen() instanceof ClickGui)) {
             return false;
         }
 

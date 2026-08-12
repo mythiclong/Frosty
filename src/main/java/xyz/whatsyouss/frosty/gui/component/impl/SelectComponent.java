@@ -1,8 +1,10 @@
 package xyz.whatsyouss.frosty.gui.component.impl;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import xyz.whatsyouss.frosty.gui.LiquidGlassStyle;
 import xyz.whatsyouss.frosty.gui.component.Component;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
+import xyz.whatsyouss.frosty.modules.impl.client.UI;
 import xyz.whatsyouss.frosty.settings.impl.SelectSetting;
 
 import java.awt.*;
@@ -24,36 +26,51 @@ public class SelectComponent extends Component {
     @Override
     public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         if (!isVisible()) return;
-        boolean isLight = ModuleManager.ui.clickGuiColor.getValue() == 0;
+        boolean isLight = UI.clickGuiColor.getValue() == 0;
         isHovered = mouseX >= x + width - 100 && mouseX <= x + width - 10 && mouseY >= y && mouseY <= y + height;
 
-        context.text(mc.font, setting.getName(), (int) (x + 2), (int) (y + height / 2 - 4), isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
+        context.text(mc.font, setting.getTransName(), (int) (x + 2), (int) (y + height / 2 - 4), LiquidGlassStyle.isEnabled() ? LiquidGlassStyle.textColor() : isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
 
         int boxColor = isHovered ? new Color(200, 200, 200).getRGB() : new Color(180, 180, 180).getRGB();
-        context.fill((int) (x + width - 100), (int) y, (int) (x + width - 10), (int) (y + height), boxColor);
+        if (LiquidGlassStyle.isEnabled()) {
+            LiquidGlassStyle.drawControl(context, x + width - 100, y, 90, height, expanded, isHovered);
+        } else {
+            context.fill((int) (x + width - 100), (int) y, (int) (x + width - 10), (int) (y + height), boxColor);
+        }
 
-        String currentOption = setting.getOptions()[(int) setting.getValue()];
-        context.text(mc.font, net.minecraft.network.chat.Component.literal(currentOption), (int) (x + width - 95), (int) (y + height / 2 - 4), isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
+        String currentOption = setting.getTransOptions()[(int) setting.getValue()];
+        context.text(mc.font, net.minecraft.network.chat.Component.literal(currentOption), (int) (x + width - 95), (int) (y + height / 2 - 4), LiquidGlassStyle.isEnabled() ? LiquidGlassStyle.textColor() : isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
 
         context.text(mc.font, net.minecraft.network.chat.Component.literal(expanded ? "▲" : "▼"), (int) (x + width - 20), (int) (y + height / 2 - 4), isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
 
         if (expanded) {
-            context.fill((int) (x + width - 100), (int) (y + height),
-                    (int) (x + width - 10), (int) (y + height + setting.getOptions().length * height),
-                    0xFF000000);
+            if (LiquidGlassStyle.isEnabled()) {
+                LiquidGlassStyle.drawGlass(context, x + width - 100, y + height, 90,
+                        setting.getOptions().length * height, 5,
+                        isLight ? 0xD8EAF2FF : 0xD624334D);
+            } else {
+                context.fill((int) (x + width - 100), (int) (y + height),
+                        (int) (x + width - 10), (int) (y + height + setting.getOptions().length * height),
+                        0xFF000000);
+            }
 
-            for (int i = 0; i < setting.getOptions().length; i++) {
+            for (int i = 0; i < setting.getTransOptions().length; i++) {
                 int optionY = (int) (y + height * (i + 1));
                 boolean optionHovered = mouseX >= x + width - 100 && mouseX <= x + width - 10 &&
                         mouseY >= optionY && mouseY < optionY + height;
 
-                context.fill((int) (x + width - 100), optionY,
-                        (int) (x + width - 10), optionY + (int) height, // -1
-                        optionHovered ? 0xFF4444AA : 0xFF333333);
+                if (LiquidGlassStyle.isEnabled()) {
+                    LiquidGlassStyle.drawControl(context, x + width - 98, optionY + 1,
+                            86, height - 2, false, optionHovered);
+                } else {
+                    context.fill((int) (x + width - 100), optionY,
+                            (int) (x + width - 10), optionY + (int) height,
+                            optionHovered ? 0xFF4444AA : 0xFF333333);
+                }
 
-                context.text(mc.font, net.minecraft.network.chat.Component.literal(setting.getOptions()[i]),
+                context.text(mc.font, net.minecraft.network.chat.Component.literal(setting.getTransOptions()[i]),
                         (int) (x + width - 95), optionY + (int) (height / 2 - 4),
-                        0xFFFFFFFF, false);
+                        LiquidGlassStyle.isEnabled() ? LiquidGlassStyle.textColor() : 0xFFFFFFFF, false);
             }
         }
     }
@@ -76,7 +93,7 @@ public class SelectComponent extends Component {
         }
 
         if (expanded) {
-            for (int i = 0; i < setting.getOptions().length; i++) {
+            for (int i = 0; i < setting.getTransOptions().length; i++) {
                 int optionY = (int) (y + height * (i + 1));
                 if (mouseX >= x + width - 100 && mouseX <= x + width - 10 &&
                         mouseY >= optionY && mouseY < optionY + height) {
@@ -87,7 +104,7 @@ public class SelectComponent extends Component {
                 }
             }
 
-            float selectBottom = y + height + setting.getOptions().length * height;
+            float selectBottom = y + height + setting.getTransOptions().length * height;
             if (mouseX >= x + width - 100 && mouseX <= x + width - 10 &&
                     mouseY >= y + height && mouseY <= selectBottom) {
                 expanded = false;
@@ -106,7 +123,7 @@ public class SelectComponent extends Component {
     }
 
     public int getOptionsLength() {
-        return setting != null ? setting.getOptions().length : 0;
+        return setting != null ? setting.getTransOptions().length : 0;
     }
 
     @Override

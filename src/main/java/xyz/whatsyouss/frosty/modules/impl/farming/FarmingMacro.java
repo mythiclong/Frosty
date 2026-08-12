@@ -34,6 +34,7 @@ public class FarmingMacro extends Module {
     private final List<double[]> waypoints = new ArrayList<>();
     private SelectSetting face;
     private String[] FACES = new String[]{"North", "South", "East", "West"};
+    private String[] CNFACES = new String[]{"北", "南", "东", "西"};
     private SliderSetting pitch, stopTime, triggerAmount;
     private ButtonSetting rotateOnFinish, pestCleaner, rewarpOnly;
     private State state = State.IDLE;
@@ -61,13 +62,13 @@ public class FarmingMacro extends Module {
     public FarmingMacro() {
         super("FarmingMacro", "农业宏", category.Farming);
 
-        this.registerSetting(face = new SelectSetting("Face", 0, FACES));
-        this.registerSetting(pitch = new SliderSetting("Pitch", 0, -90, 90, 1));
-        this.registerSetting(stopTime = new SliderSetting("Stop time", 500, 100, 6000, 50));
-        this.registerSetting(rotateOnFinish = new ButtonSetting("Rotate on finish", false));
-        this.registerSetting(pestCleaner = new ButtonSetting("Pest cleaner", true));
-        this.registerSetting(triggerAmount = new SliderSetting("Trigger amount", 4, 1, 8, 1));
-        this.registerSetting(rewarpOnly = new ButtonSetting("Rewarp only", true));
+        this.registerSetting(face = new SelectSetting("Face", "朝向", 0, FACES, CNFACES));
+        this.registerSetting(pitch = new SliderSetting("Pitch", 0, -90, 90, 1, "俯仰角"));
+        this.registerSetting(stopTime = new SliderSetting("Stop time", 500, 100, 6000, 50, "刹车时长"));
+        this.registerSetting(rotateOnFinish = new ButtonSetting("Rotate on finish", "结束后反向", false));
+        this.registerSetting(pestCleaner = new ButtonSetting("Pest cleaner", "害虫清理", true));
+        this.registerSetting(triggerAmount = new SliderSetting("Trigger amount", 4, 1, 8, 1, "触发数量"));
+        this.registerSetting(rewarpOnly = new ButtonSetting("Rewarp only", "只在本轮结束清理", true));
     }
 
     private static WorldDir yawToWorldDir(float yaw) {

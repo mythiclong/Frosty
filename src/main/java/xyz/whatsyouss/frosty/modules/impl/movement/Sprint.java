@@ -17,9 +17,8 @@ public class Sprint extends Module {
     public Sprint() {
         super("Sprint", "疾跑", category.Movement);
 
-        this.registerSetting(keep = new ButtonSetting("Keep", false));
-        this.registerSetting(slow = new SliderSetting("Slow", "%", 0, 0, 40, 1));
-
+        this.registerSetting(keep = new ButtonSetting("Keep", "无攻击减速", false));
+        this.registerSetting(slow = new SliderSetting("Slow", "%", 0, 0, 40, 1, "减速"));
     }
 
     @Override

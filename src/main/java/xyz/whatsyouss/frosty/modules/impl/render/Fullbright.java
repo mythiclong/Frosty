@@ -8,13 +8,14 @@ public class Fullbright extends Module {
     private SelectSetting mode;
 
     private String[] modes = new String[]{"Gamma"};
+    private String[] CNmodes = new String[]{"伽马值"};
 
     public int selectedMode;
 
     public Fullbright() {
         super("Fullbright", "夜视", category.Render);
 
-        this.registerSetting(mode = new SelectSetting("Mode", 0, modes));
+        this.registerSetting(mode = new SelectSetting("Mode", "模式", 0, modes, CNmodes));
     }
 
     @Override

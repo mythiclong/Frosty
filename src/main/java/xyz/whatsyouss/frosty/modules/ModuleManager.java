@@ -82,8 +82,6 @@ public class ModuleManager {
     public static MithrilMacro mithrilMacro;
     public static UngrabMouse ungrabMouse;
 //    public static CommissionMacro commissionMacro;
-    public static QMaths qMaths;
-    public static WBMacro wbMacro;
     public static FarmingMacro farmingMacro;
     public static FarmingProtector farmingProtector;
     public static PestESP pestESP;
@@ -157,8 +155,6 @@ public class ModuleManager {
         this.addModule(mithrilMacro = new MithrilMacro());
         this.addModule(ungrabMouse = new UngrabMouse());
 //        this.addModule(commissionMacro = new CommissionMacro());
-        this.addModule(qMaths = new QMaths());
-        this.addModule(wbMacro = new WBMacro());
         this.addModule(farmingMacro = new FarmingMacro());
         this.addModule(farmingProtector = new FarmingProtector());
         this.addModule(pestCleaner = new PestCleaner());
@@ -266,5 +262,9 @@ public class ModuleManager {
             }
         }
         return null;
+    }
+
+    public static boolean isDangerousModule(Module m) {
+        return m instanceof Velocity || m instanceof Fly;
     }
 }

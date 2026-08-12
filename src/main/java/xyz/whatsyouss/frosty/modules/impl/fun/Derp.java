@@ -11,6 +11,7 @@ import xyz.whatsyouss.frosty.utility.Utils;
 public class Derp extends Module {
 
     private final String[] dir = new String[]{"Left", "Right", "Switch"};
+    private final String[] CNdir = new String[]{"左", "右", "切换"};
 
     private final SelectSetting direction;
     private final SliderSetting speed;
@@ -24,8 +25,8 @@ public class Derp extends Module {
     public Derp() {
         super("Derp", "自身旋转", category.Fun);
 
-        this.registerSetting(speed = new SliderSetting("Speed", 3, 1, 7, 1));
-        this.registerSetting(direction = new SelectSetting("Direction", 2, dir));
+        this.registerSetting(speed = new SliderSetting("Speed", 3, 1, 7, 1, "速度"));
+        this.registerSetting(direction = new SelectSetting("Direction", "方向", 2, dir, CNdir));
     }
 
     @Override

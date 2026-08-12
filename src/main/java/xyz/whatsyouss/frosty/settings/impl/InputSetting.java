@@ -2,6 +2,7 @@ package xyz.whatsyouss.frosty.settings.impl;
 
 import xyz.whatsyouss.frosty.Frosty;
 import xyz.whatsyouss.frosty.events.impl.SettingUpdateEvent;
+import xyz.whatsyouss.frosty.modules.impl.client.UI;
 import xyz.whatsyouss.frosty.settings.Setting;
 
 public class InputSetting extends Setting {
@@ -40,6 +41,13 @@ public class InputSetting extends Setting {
     }
 
     public String getName() {
+        return this.name;
+    }
+
+    public String getTransName() {
+        if (this.cnName != null && !this.cnName.isEmpty() && UI.lang.getValue() == 1) {
+            return this.cnName;
+        }
         return this.name;
     }
 

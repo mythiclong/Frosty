@@ -16,6 +16,6 @@ public class AntiTexture extends Module {
     public AntiTexture() {
         super("AntiTexture", "无纹理包", category.Render);
 
-        this.registerSetting(skipDownload = new ButtonSetting("Skip download", true));
+        this.registerSetting(skipDownload = new ButtonSetting("Skip download", "跳过下载", true));
     }
 }

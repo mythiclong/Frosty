@@ -28,6 +28,7 @@ public class WoodNuker extends Module {
     private ButtonSetting aim, silent;
 
     private String[] types = new String[]{"Oak", "Spruce", "Birch", "Dark Oak", "Acacia", "Jungle", "Fig", "Mangrove"};
+    private String[] CNtypes = new String[]{"橡木", "云杉木", "白桦木", "深色橡木", "金合欢木", "丛林1木", "无花果木", "红木"};
 
     private final int radius = 5;
     private List<Block> targetBlocks = new ArrayList<>();
@@ -41,9 +42,9 @@ public class WoodNuker extends Module {
     public WoodNuker() {
         super("WoodNuker", "木头光环",category.Foraging);
 
-        this.registerSetting(type = new SelectSetting("Type", 0, types));
-        this.registerSetting(aim = new ButtonSetting("Aim", false));
-        this.registerSetting(silent = new ButtonSetting("Silent", false));
+        this.registerSetting(type = new SelectSetting("Type", "类型", 0, types, CNtypes));
+        this.registerSetting(aim = new ButtonSetting("Aim", "瞄准", false));
+        this.registerSetting(silent = new ButtonSetting("Silent", "静默转向", false));
     }
 
     @Override

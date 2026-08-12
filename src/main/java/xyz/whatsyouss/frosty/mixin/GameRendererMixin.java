@@ -29,6 +29,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.whatsyouss.frosty.Frosty;
 import xyz.whatsyouss.frosty.events.impl.Render3DEvent;
 import xyz.whatsyouss.frosty.events.impl.RenderAfterWorldEvent;
+import xyz.whatsyouss.frosty.gui.GlassRenderer;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
 import xyz.whatsyouss.frosty.utility.Utils;
 
@@ -36,6 +37,7 @@ import static xyz.whatsyouss.frosty.Frosty.mc;
 
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
+    @Shadow @Final private Minecraft minecraft;
     @Shadow
     @Final
     private GameRenderState gameRenderState;
@@ -63,5 +65,17 @@ public abstract class GameRendererMixin {
     @Inject(method = "renderLevel", at = @At("TAIL"))
     private void onRenderAfterWorld(CallbackInfo info) {
         Frosty.EVENT_BUS.post(RenderAfterWorldEvent.get());
+    }
+
+    @Inject(method = "extract", at = @At("HEAD"))
+    private void frosty$beginGlassFrame(DeltaTracker deltaTracker, boolean tick, CallbackInfo info) {
+        GlassRenderer.beginFrame();
+    }
+
+    @Inject(method = "processBlurEffect", at = @At("HEAD"), cancellable = true)
+    private void frosty$renderGlass(CallbackInfo info) {
+        if (GlassRenderer.render(this.minecraft)) {
+            info.cancel();
+        }
     }
 }

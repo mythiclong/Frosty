@@ -9,6 +9,9 @@ public class Commands extends Module {
 
     @Override
     public String getDesc() {
+        if (UI.lang.getValue() == 1) {
+            return "客户端指令 (.help)";
+        }
         return "Client commands (.help)";
     }
 }

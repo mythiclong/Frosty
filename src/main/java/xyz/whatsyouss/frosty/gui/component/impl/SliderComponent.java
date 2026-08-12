@@ -1,9 +1,12 @@
 package xyz.whatsyouss.frosty.gui.component.impl;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import xyz.whatsyouss.frosty.gui.LiquidGlassStyle;
 import xyz.whatsyouss.frosty.gui.component.Component;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
+import xyz.whatsyouss.frosty.modules.impl.client.UI;
 import xyz.whatsyouss.frosty.settings.impl.SliderSetting;
+import xyz.whatsyouss.frosty.utility.RenderUtils;
 
 import java.awt.*;
 
@@ -26,14 +29,19 @@ public class SliderComponent extends Component {
         if (!isVisible()) {
             return;
         }
-        boolean isLight = ModuleManager.ui.clickGuiColor.getValue() == 0;
+        boolean isLight = UI.clickGuiColor.getValue() == 0;
         isHovered = isHovered(mouseX, mouseY);
 
         int sliderY = (int) (y + height - 5);
         float sliderStartX = x + width / 3;
         float sliderEndX = x + width - 5;
         float sliderWidth = sliderEndX - sliderStartX;
-        context.fill((int) sliderStartX, sliderY, (int) sliderEndX, sliderY + 3, new Color(180, 180, 180).getRGB());
+        if (LiquidGlassStyle.isEnabled()) {
+            RenderUtils.drawRoundedRect(context, sliderStartX, sliderY, sliderWidth, 3, 2,
+                    isLight ? 0x7091A5C8 : 0x705D7198);
+        } else {
+            context.fill((int) sliderStartX, sliderY, (int) sliderEndX, sliderY + 3, new Color(180, 180, 180).getRGB());
+        }
 
         if (setting.isRange()) {
             double minValue = setting.getInputMin();
@@ -50,10 +58,9 @@ public class SliderComponent extends Component {
             }
 
             // draw range
-            context.fill((int) (sliderStartX + minPos), sliderY, (int) (sliderStartX + maxPos), sliderY + 3, new Color(100, 100, 255).getRGB());
-
-            context.fill((int) (sliderStartX + minPos - 2), sliderY - 2, (int) (sliderStartX + minPos + 2), sliderY + 5, Color.BLUE.getRGB());
-            context.fill((int) (sliderStartX + maxPos - 2), sliderY - 2, (int) (sliderStartX + maxPos + 2), sliderY + 5, Color.BLUE.getRGB());
+            drawSliderRange(context, sliderStartX + minPos, sliderStartX + maxPos, sliderY);
+            drawSliderKnob(context, sliderStartX + minPos, sliderY);
+            drawSliderKnob(context, sliderStartX + maxPos, sliderY);
         } else {
             double value = setting.getInput();
             double pos = ((value - setting.getMin()) / (setting.getMax() - setting.getMin())) * sliderWidth;
@@ -62,13 +69,37 @@ public class SliderComponent extends Component {
                 pos = sliderWidth;
             }
 
-            context.fill((int) sliderStartX, sliderY, (int) (sliderStartX + pos), sliderY + 3, new Color(100, 100, 255).getRGB());
-            context.fill((int) (sliderStartX + pos - 2), sliderY - 2, (int) (sliderStartX + pos + 2), sliderY + 5, Color.BLUE.getRGB());
+            drawSliderRange(context, sliderStartX, sliderStartX + pos, sliderY);
+            drawSliderKnob(context, sliderStartX + pos, sliderY);
         }
 
-        String displayText = setting.getName() + ": " + (setting.isRange() ?
-                String.format("%.2f-%.2f", setting.getInputMin(), setting.getInputMax()) : String.format("%.2f", setting.getInput())) + setting.getSuffix();
-        context.text(mc.font, net.minecraft.network.chat.Component.literal(displayText), (int) (x + 2), (int) (y + height / 2 - 4), isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
+        double displayMin = displayValue(setting.getInputMin());
+        double displayMax = displayValue(setting.getInputMax());
+        double displayValue = displayValue(setting.getInput());
+        String displayText = setting.getTransName() + ": " + (setting.isRange() ?
+                String.format("%.2f-%.2f", displayMin, displayMax) : String.format("%.2f", displayValue)) + setting.getSuffix();
+        context.text(mc.font, net.minecraft.network.chat.Component.literal(displayText), (int) (x + 2), (int) (y + height / 2 - 4), LiquidGlassStyle.isEnabled() ? LiquidGlassStyle.textColor() : isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
+    }
+
+    private void drawSliderRange(GuiGraphicsExtractor context, double start, double end, int sliderY) {
+        if (LiquidGlassStyle.isEnabled()) {
+            float rangeWidth = (float) (end - start);
+            RenderUtils.drawRoundedRect(context, (float) start, sliderY, rangeWidth, 3,
+                    2, LiquidGlassStyle.accentColor());
+        } else {
+            context.fill((int) start, sliderY, (int) end, sliderY + 3, new Color(100, 100, 255).getRGB());
+        }
+    }
+
+    private void drawSliderKnob(GuiGraphicsExtractor context, double position, int sliderY) {
+        if (LiquidGlassStyle.isEnabled()) {
+            RenderUtils.drawRoundedRect(context, (float) position - 3, sliderY - 3, 6, 8,
+                    3, 0xFFEAF2FF);
+            RenderUtils.drawRoundedBorder(context, (float) position - 3, sliderY - 3, 6, 8,
+                    3, LiquidGlassStyle.accentColor());
+        } else {
+            context.fill((int) position - 2, sliderY - 2, (int) position + 2, sliderY + 5, Color.BLUE.getRGB());
+        }
     }
 
     @Override
@@ -84,6 +115,23 @@ public class SliderComponent extends Component {
         float sliderStartX = x + width / 3;
         float sliderEndX = x + width - 5;
         float sliderWidth = sliderEndX - sliderStartX;
+
+        if (LiquidGlassStyle.isEnabled() && mouseX >= sliderStartX && mouseX <= sliderEndX
+                && mouseY >= sliderY - 3 && mouseY <= sliderY + 6) {
+            if (setting.isRange()) {
+                double minPos = ((setting.getInputMin() - setting.getMin())
+                        / (setting.getMax() - setting.getMin())) * sliderWidth;
+                double maxPos = ((setting.getInputMax() - setting.getMin())
+                        / (setting.getMax() - setting.getMin())) * sliderWidth;
+                draggingMin = Math.abs(mouseX - (sliderStartX + minPos))
+                        <= Math.abs(mouseX - (sliderStartX + maxPos));
+                draggingMax = !draggingMin;
+            } else {
+                draggingMin = true;
+            }
+            updateDraggedValue(mouseX);
+            return;
+        }
 
         if (setting.isRange()) {
             double minValue = setting.getInputMin();
@@ -122,6 +170,9 @@ public class SliderComponent extends Component {
         if (!isVisible()) {
             return;
         }
+        if (LiquidGlassStyle.isEnabled()) {
+            snapDraggedValue();
+        }
         draggingMin = false;
         draggingMax = false;
     }
@@ -131,30 +182,58 @@ public class SliderComponent extends Component {
             return;
         }
         if (draggingMin || draggingMax) {
-            float sliderStartX = x + width / 3;
-            float sliderEndX = x + width - 5;
-            float sliderWidth = sliderEndX - sliderStartX;
-            double value = (mouseX - sliderStartX) / sliderWidth * (setting.getMax() - setting.getMin()) + setting.getMin();
-            value = Math.max(setting.getMin(), Math.min(setting.getMax(), value));
-
-            double intervals = setting.getIntervals();
-            if (intervals > 0) {
-                value = Math.round(value / intervals) * intervals;
-                value = Math.round(value * 100.0) / 100.0; // Round to 2 decimal places
-            }
-
-            if (setting.isRange()) {
-                if (draggingMin) {
-                    double maxValue = setting.getInputMax();
-                    setting.setInputMin(Math.min(value, maxValue));
-                } else if (draggingMax) {
-                    double minValue = setting.getInputMin();
-                    setting.setInputMax(Math.max(value, minValue));
-                }
-            } else {
-                setting.setInput(value);
-            }
+            updateDraggedValue(mouseX);
         }
+    }
+
+    private void updateDraggedValue(double mouseX) {
+        float sliderStartX = x + width / 3;
+        float sliderEndX = x + width - 5;
+        float sliderWidth = sliderEndX - sliderStartX;
+        double value = (mouseX - sliderStartX) / sliderWidth
+                * (setting.getMax() - setting.getMin()) + setting.getMin();
+        value = Math.max(setting.getMin(), Math.min(setting.getMax(), value));
+
+        if (!LiquidGlassStyle.isEnabled() && setting.getIntervals() > 0) {
+            value = snapToInterval(value);
+        }
+
+        if (setting.isRange()) {
+            if (draggingMin) {
+                setting.setInputMin(Math.min(value, setting.getInputMax()));
+            } else if (draggingMax) {
+                setting.setInputMax(Math.max(value, setting.getInputMin()));
+            }
+        } else {
+            setting.setInput(value);
+        }
+    }
+
+    private void snapDraggedValue() {
+        if (setting.getIntervals() <= 0) {
+            return;
+        }
+        if (setting.isRange()) {
+            if (draggingMin) {
+                setting.setInputMin(snapToInterval(setting.getInputMin()));
+            } else if (draggingMax) {
+                setting.setInputMax(snapToInterval(setting.getInputMax()));
+            }
+        } else if (draggingMin) {
+            setting.setInput(snapToInterval(setting.getInput()));
+        }
+    }
+
+    private double snapToInterval(double value) {
+        double snapped = setting.getMin() + Math.round((value - setting.getMin())
+                / setting.getIntervals()) * setting.getIntervals();
+        return Math.max(setting.getMin(), Math.min(setting.getMax(),
+                Math.round(snapped * 100.0) / 100.0));
+    }
+
+    private double displayValue(double value) {
+        return LiquidGlassStyle.isEnabled() && setting.getIntervals() > 0
+                ? snapToInterval(value) : value;
     }
 
     @Override

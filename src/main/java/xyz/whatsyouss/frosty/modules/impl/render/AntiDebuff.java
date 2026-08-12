@@ -10,6 +10,6 @@ public class AntiDebuff extends Module {
     public AntiDebuff() {
         super("AntiDebuff", "防负面效果", category.Render);
 
-        this.registerSetting(nausea = new ButtonSetting("Nausea", true));
+        this.registerSetting(nausea = new ButtonSetting("Nausea", "反胃", true));
     }
 }

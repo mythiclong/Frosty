@@ -82,9 +82,9 @@ public class CarnivalHelper extends Module {
         super("CarnivalHelper", "狂欢节助手", category.Other);
 
 //        this.registerSetting(autoFruitDigging = new ButtonSetting("Auto fruit digging", true));
-        this.registerSetting(fishLatency = new SliderSetting("Fish latency", 75, 50, 300, 25));
-        this.registerSetting(zombieShootoutLatency = new SliderSetting("Shoot latency", 150, 50, 300, 25));
-        this.registerSetting(rotateSmoothing = new SliderSetting("Rotate smoothing", 0, 0, 10, 1));
+        this.registerSetting(fishLatency = new SliderSetting("Fish latency", 75, 50, 300, 25, "钓鱼预测量"));
+        this.registerSetting(zombieShootoutLatency = new SliderSetting("Shoot latency", 150, 50, 300, 25, "射击预测量"));
+        this.registerSetting(rotateSmoothing = new SliderSetting("Rotate smoothing", 0, 0, 10, 1, "转向丝滑度"));
     }
 
     @Override
