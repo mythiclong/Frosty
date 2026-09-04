@@ -31,6 +31,10 @@ repositories {
 		name = 'impactdevelopment-repo'
 		url = 'https://impactdevelopment.github.io/maven/'
 	}
+	maven {
+		name = 'modrinth'
+		url = 'https://api.modrinth.com/maven'
+	}
 }
 
 configurations {
@@ -46,6 +50,8 @@ dependencies {
 
 	libImpl("meteordevelopment:orbit:0.2.3")
 	implementation "meteordevelopment:orbit:0.2.3"
+
+	modCompileOnly "maven.modrinth:sodium:mc1.21.4-0.6.6-fabric"
 
 	configurations.libImpl.dependencies.each {
 		implementation(it)
