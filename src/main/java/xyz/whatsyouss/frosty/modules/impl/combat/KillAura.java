@@ -34,11 +34,11 @@ public class KillAura extends Module {
     public KillAura() {
         super("KillAura", "杀戮光环", category.Combat);
 
-        this.registerSetting(aps = new SliderSetting("APS", 14, 1, 20, 1));
-        this.registerSetting(swingRange = new SliderSetting("Swing range", 4.5, 3, 7, 0.1));
-        this.registerSetting(attackRange = new SliderSetting("Attack range", 3.2, 3, 5, 0.1));
-        this.registerSetting(player = new ButtonSetting("Player", false));
-        this.registerSetting(requirePress = new ButtonSetting("Require press", false));
+        this.registerSetting(aps = new SliderSetting("APS", 14, 1, 20, 1, "每秒攻击"));
+        this.registerSetting(swingRange = new SliderSetting("Swing range", 4.5, 3, 7, 0.1, "挥动距离"));
+        this.registerSetting(attackRange = new SliderSetting("Attack range", 3.2, 3, 5, 0.1, "攻击距离"));
+        this.registerSetting(player = new ButtonSetting("Player", "玩家", false));
+        this.registerSetting(requirePress = new ButtonSetting("Require press", "按住攻击", false));
     }
 
     @Override

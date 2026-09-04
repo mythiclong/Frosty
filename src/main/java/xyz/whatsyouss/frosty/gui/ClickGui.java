@@ -17,6 +17,7 @@ import xyz.whatsyouss.frosty.gui.component.impl.ModuleComponent;
 import xyz.whatsyouss.frosty.gui.component.impl.SelectComponent;
 import xyz.whatsyouss.frosty.modules.Module;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
+import xyz.whatsyouss.frosty.modules.impl.client.UI;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -111,20 +112,25 @@ public class ClickGui extends Screen {
     @Override
     public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         float scale = 1.0f;
-        boolean isLight = ModuleManager.ui.clickGuiColor.getValue() == 0;
+        boolean isLight = UI.clickGuiColor.getValue() == 0;
 
-        // Draw GUI bg
-        context.fill((int) (x / scale), (int) (y / scale), (int) ((x + width) / scale), (int) ((y + height) / scale),
-                isLight ? new Color(250, 250, 250).getRGB() : new Color(50, 50, 50).getRGB());
-        context.fill((int) (x / scale), (int) (y / scale), (int) ((x + width) / scale), (int) ((y + 20) / scale),
-                isLight ? new Color(100, 100, 255).getRGB() : new Color(60, 60, 180).getRGB());
+        if (LiquidGlassStyle.isEnabled()) {
+            LiquidGlassStyle.drawPanel(context, x, y, width, height);
+            LiquidGlassStyle.drawHeader(context, x, y, width, 20);
+            LiquidGlassStyle.drawControl(context, x + 5, y + 25, 60, height - 30, false, false);
+            LiquidGlassStyle.drawControl(context, x + 75, y + 25, width - 80, height - 30, false, false);
+        } else {
+            context.fill((int) (x / scale), (int) (y / scale), (int) ((x + width) / scale), (int) ((y + height) / scale),
+                    isLight ? new Color(250, 250, 250).getRGB() : new Color(50, 50, 50).getRGB());
+            context.fill((int) (x / scale), (int) (y / scale), (int) ((x + width) / scale), (int) ((y + 20) / scale),
+                    isLight ? new Color(100, 100, 255).getRGB() : new Color(60, 60, 180).getRGB());
+            context.fill((int) ((x + 5) / scale), (int) ((y + 25) / scale), (int) ((x + 65) / scale), (int) ((y + height - 5) / scale),
+                    isLight ? new Color(230, 230, 230).getRGB() : new Color(70, 70, 70).getRGB());
+            context.fill((int) ((x + 75) / scale), (int) ((y + 25) / scale), (int) ((x + width - 5) / scale), (int) ((y + height - 5) / scale),
+                    isLight ? new Color(240, 240, 240).getRGB() : new Color(60, 60, 60).getRGB());
+        }
 
-        context.text(this.font, "Frosty 1.2.1", (int) ((x + width / 2) / scale), (int) ((y + 6) / scale), Color.WHITE.getRGB());
-
-        context.fill((int) ((x + 5) / scale), (int) ((y + 25) / scale), (int) ((x + 65) / scale), (int) ((y + height - 5) / scale),
-                isLight ? new Color(230, 230, 230).getRGB() : new Color(70, 70, 70).getRGB());
-        context.fill((int) ((x + 75) / scale), (int) ((y + 25) / scale), (int) ((x + width - 5) / scale), (int) ((y + height - 5) / scale),
-                isLight ? new Color(240, 240, 240).getRGB() : new Color(60, 60, 60).getRGB());
+        context.text(this.font, "Frosty 1.3.0", (int) ((x + width / 2) / scale), (int) ((y + 6) / scale), Color.WHITE.getRGB());
 
         for (CategoryComponent component : categoryComponents) {
             component.render(context, mouseX, mouseY, delta);
@@ -194,8 +200,13 @@ public class ClickGui extends Screen {
                 List<FormattedCharSequence> wrappedText = this.font.split(Component.literal(component.getModule().getDesc()), descWidth - 10);
                 int descHeight = wrappedText.size() * 10 + 10;
 
-                context.fill(descX, descY, descX + descWidth, descY + descHeight,
-                        isLight ? new Color(100, 100, 255).getRGB() : new Color(60, 60, 180).getRGB());
+                if (LiquidGlassStyle.isEnabled()) {
+                    LiquidGlassStyle.drawGlass(context, descX, descY, descWidth, descHeight, 6,
+                            isLight ? 0xD8678CFF : 0xD22A4A95);
+                } else {
+                    context.fill(descX, descY, descX + descWidth, descY + descHeight,
+                            isLight ? new Color(100, 100, 255).getRGB() : new Color(60, 60, 180).getRGB());
+                }
 
                 for (int i = 0; i < wrappedText.size(); i++) {
                     context.text(this.font, wrappedText.get(i), descX + 5, descY + 5 + (i * 10), Color.WHITE.getRGB());
@@ -442,6 +453,30 @@ public class ClickGui extends Screen {
         }
 
         return super.charTyped(input);
+    }
+
+    @Override
+    protected void extractBlurredBackground(GuiGraphicsExtractor graphics) {
+        if (LiquidGlassStyle.isEnabled()) {
+            return;
+        }
+        super.extractBlurredBackground(graphics);
+    }
+
+    @Override
+    protected void extractMenuBackground(GuiGraphicsExtractor graphics) {
+        if (LiquidGlassStyle.isEnabled()) {
+            return;
+        }
+        super.extractMenuBackground(graphics);
+    }
+
+    @Override
+    public void extractTransparentBackground(GuiGraphicsExtractor graphics) {
+        if (LiquidGlassStyle.isEnabled()) {
+            return;
+        }
+        super.extractTransparentBackground(graphics);
     }
 
     @Override

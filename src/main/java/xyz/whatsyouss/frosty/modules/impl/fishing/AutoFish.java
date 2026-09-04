@@ -53,6 +53,7 @@ public class AutoFish extends Module {
     private static final int SLIME_SPLIT_SCAN_TICKS = 20;
 
     private String[] faces = new String[]{"Mob", "Down"};
+    private String[] CNfaces = new String[]{"海怪", "下方"};
 
     private ButtonSetting autoThrow, autoKill, antiAFK, useAbility;
     private SliderSetting maxWait, triggerAmount, weaponSlot;
@@ -96,14 +97,14 @@ public class AutoFish extends Module {
     public AutoFish() {
         super("AutoFish", "自动钓鱼", category.Fishing);
 
-        this.registerSetting(autoThrow = new ButtonSetting("Auto Throw", true));
-        this.registerSetting(antiAFK = new ButtonSetting("Anti AFK", true));
-        this.registerSetting(maxWait = new SliderSetting("Max Wait", "s", 30, 5, 60, 1));
-        this.registerSetting(autoKill = new ButtonSetting("Auto kill", true));
-        this.registerSetting(triggerAmount = new SliderSetting("Trigger amount", 3, 1, 15, 1));
-        this.registerSetting(useAbility = new ButtonSetting("Use ability", false));
-        this.registerSetting(face = new SelectSetting("Face", 0, faces));
-        this.registerSetting(weaponSlot = new SliderSetting("Weapon slot", 1, 1, 9, 1));
+        this.registerSetting(autoThrow = new ButtonSetting("Auto Throw", "自动抛竿", true));
+        this.registerSetting(antiAFK = new ButtonSetting("Anti AFK", "防挂机", true));
+        this.registerSetting(maxWait = new SliderSetting("Max Wait", "s", 30, 5, 60, 1, "最长等待时间"));
+        this.registerSetting(autoKill = new ButtonSetting("Auto kill", "击杀海怪", true));
+        this.registerSetting(triggerAmount = new SliderSetting("Trigger amount", 3, 1, 15, 1, "触发数量"));
+        this.registerSetting(useAbility = new ButtonSetting("Use ability", "使用技能", false));
+        this.registerSetting(face = new SelectSetting("Face", "朝向", 0, faces, CNfaces));
+        this.registerSetting(weaponSlot = new SliderSetting("Weapon slot", "武器槽位", 1, 1, 9, 1));
     }
 
     @Override

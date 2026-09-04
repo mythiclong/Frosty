@@ -2,6 +2,7 @@ package xyz.whatsyouss.frosty.settings.impl;
 
 import xyz.whatsyouss.frosty.Frosty;
 import xyz.whatsyouss.frosty.events.impl.SettingUpdateEvent;
+import xyz.whatsyouss.frosty.modules.impl.client.UI;
 import xyz.whatsyouss.frosty.settings.Setting;
 
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ public class SliderSetting extends Setting {
     private final double intervals;
     private boolean isRange;
     private String suffix = "";
+    private String cnName;
 
     public SliderSetting(String name, double defaultValue, double min, double max, double intervals) {
         super(name);
@@ -54,6 +56,57 @@ public class SliderSetting extends Setting {
         this.max = max;
         this.intervals = intervals;
         this.isRange = true;
+    }
+
+    public SliderSetting(String name, double defaultValue, double min, double max, double intervals, String cnName) {
+        super(name);
+        this.cnName = cnName;
+        this.value = defaultValue;
+        this.min = min;
+        this.max = max;
+        this.intervals = intervals;
+        this.isRange = false;
+    }
+
+    public SliderSetting(String name, String suffix, double defaultValue, double min, double max, double intervals, String cnName) {
+        super(name);
+        this.cnName = cnName;
+        this.suffix = suffix;
+        this.value = defaultValue;
+        this.min = min;
+        this.max = max;
+        this.intervals = intervals;
+        this.isRange = false;
+    }
+
+    public SliderSetting(String name, double valueMin, double valueMax, double min, double max, double intervals, String cnName) {
+        super(name);
+        this.cnName = cnName;
+        this.valueMin = valueMin;
+        this.valueMax = valueMax;
+        this.min = min;
+        this.max = max;
+        this.intervals = intervals;
+        this.isRange = true;
+    }
+
+    public SliderSetting(String name, String suffix, double valueMin, double valueMax, double min, double max, double intervals, String cnName) {
+        super(name);
+        this.cnName = cnName;
+        this.suffix = suffix;
+        this.valueMin = valueMin;
+        this.valueMax = valueMax;
+        this.min = min;
+        this.max = max;
+        this.intervals = intervals;
+        this.isRange = true;
+    }
+
+    public String getTransName() {
+        if (this.cnName != null && !this.cnName.isEmpty() && UI.lang.getValue() == 1) {
+            return this.cnName;
+        }
+        return this.name;
     }
 
     public double getInput() {

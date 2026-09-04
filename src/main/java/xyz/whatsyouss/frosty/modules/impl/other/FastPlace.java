@@ -13,7 +13,7 @@ public class FastPlace extends Module {
     public FastPlace() {
         super("FastPlace", "快速放置", category.Other);
 
-        this.registerSetting(delay = new SliderSetting("Delay", 1, 0, 3, 1));
+        this.registerSetting(delay = new SliderSetting("Delay", 1, 0, 3, 1, "延迟"));
     }
 
     @EventHandler

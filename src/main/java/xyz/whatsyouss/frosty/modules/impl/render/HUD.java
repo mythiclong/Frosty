@@ -27,6 +27,7 @@ public class HUD extends Module {
     private SliderSetting opacity, offset;
 
     private String[] colors = new String[] {"Rainbow", "Cherry", "Cotton candy", "Flare", "Flower", "Gold", "Grayscale", "Royal", "Sky", "Vine"};
+    private String[] CNcolors = new String[] {"彩虹", "粉樱", "棉花糖", "炽焰", "繁花", "流金", "灰阶", "皇室蓝", "晴空", "青藤"};
 
     private static int MARGIN = 5;
     private static final int INFO_COLOR = 0xFFA0A0A0;
@@ -36,13 +37,13 @@ public class HUD extends Module {
     public HUD() {
         super("HUD", "界面", Module.category.Render);
 
-        this.registerSetting(offset = new SliderSetting("Offset", 2, 0, 5, 1));
-        this.registerSetting(color = new SelectSetting("Color", 0, colors));
-        this.registerSetting(flow = new ButtonSetting("Gradient", false));
-        this.registerSetting(suffix = new ButtonSetting("Suffix", true));
-        this.registerSetting(bar = new ButtonSetting("Bar", true));
-        this.registerSetting(background = new ButtonSetting("Background", true));
-        this.registerSetting(opacity = new SliderSetting("Opacity", "%", 50, 0, 100, 1));
+        this.registerSetting(offset = new SliderSetting("Offset", 2, 0, 5, 1, "位置偏移"));
+        this.registerSetting(color = new SelectSetting("Color", "颜色", 0, colors, CNcolors));
+        this.registerSetting(flow = new ButtonSetting("Gradient", "渐变", false));
+        this.registerSetting(suffix = new ButtonSetting("Suffix", "尾标", true));
+        this.registerSetting(bar = new ButtonSetting("Bar", "尾块", true));
+        this.registerSetting(background = new ButtonSetting("Background", "背景", true));
+        this.registerSetting(opacity = new SliderSetting("Opacity", "%", 50, 0, 100, 1, "透明度"));
     }
 
     @Override

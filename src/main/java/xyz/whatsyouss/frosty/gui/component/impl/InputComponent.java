@@ -2,6 +2,7 @@ package xyz.whatsyouss.frosty.gui.component.impl;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import xyz.whatsyouss.frosty.gui.ClickGui;
+import xyz.whatsyouss.frosty.gui.LiquidGlassStyle;
 import xyz.whatsyouss.frosty.gui.component.Component;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
 import xyz.whatsyouss.frosty.settings.impl.InputSetting;
@@ -29,18 +30,23 @@ public class InputComponent extends Component {
         boolean isLight = ModuleManager.ui.clickGuiColor.getValue() == 0;
         isHovered = mouseX >= x + width - 150 && mouseX <= x + width - 10 && mouseY >= y && mouseY <= y + height;
 
-        context.text(mc.font, setting.getName(), (int) (x + 2), (int) (y + height / 2 - 4), isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
+        context.text(mc.font, setting.getTransName(), (int) (x + 2), (int) (y + height / 2 - 4), LiquidGlassStyle.isEnabled() ? LiquidGlassStyle.textColor() : isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
 
         int boxColor = focused ? new Color(200, 200, 255).getRGB() :
                 (isHovered ? new Color(200, 200, 200).getRGB() : new Color(180, 180, 180).getRGB());
-        context.fill((int) (x + width - 150), (int) y, (int) (x + width - 10), (int) (y + height), boxColor);
+        if (LiquidGlassStyle.isEnabled()) {
+            LiquidGlassStyle.drawControl(context, x + width - 150, y, 140, height,
+                    focused, isHovered);
+        } else {
+            context.fill((int) (x + width - 150), (int) y, (int) (x + width - 10), (int) (y + height), boxColor);
+        }
 
         String displayText = setting.getValue();
         if (displayText.isEmpty() && !focused) {
             displayText = setting.getPlaceholder();
-            context.text(mc.font, net.minecraft.network.chat.Component.literal(displayText), (int) (x + width - 145), (int) (y + height / 2 - 4), Color.GRAY.getRGB(), false);
+            context.text(mc.font, net.minecraft.network.chat.Component.literal(displayText), (int) (x + width - 145), (int) (y + height / 2 - 4), LiquidGlassStyle.isEnabled() ? LiquidGlassStyle.mutedTextColor() : Color.GRAY.getRGB(), false);
         } else {
-            context.text(mc.font, net.minecraft.network.chat.Component.literal(displayText + (focused ? "_" : "")), (int) (x + width - 145), (int) (y + height / 2 - 4), isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
+            context.text(mc.font, net.minecraft.network.chat.Component.literal(displayText + (focused ? "_" : "")), (int) (x + width - 145), (int) (y + height / 2 - 4), LiquidGlassStyle.isEnabled() ? LiquidGlassStyle.textColor() : isLight ? Color.BLACK.getRGB() : Color.WHITE.getRGB(), false);
         }
     }
 

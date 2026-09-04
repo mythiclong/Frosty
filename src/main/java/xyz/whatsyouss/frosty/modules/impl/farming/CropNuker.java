@@ -33,8 +33,8 @@ public class CropNuker extends Module {
     public CropNuker() {
         super("CropNuker", "作物光环", category.Farming);
 
-        this.registerSetting(bps = new SliderSetting("BPS", 20 ,3, 20, 1));
-        this.registerSetting(ignoreBaby = new ButtonSetting("Ignore baby", true));
+        this.registerSetting(bps = new SliderSetting("BPS", 20 ,3, 20, 1, "每秒破坏数量"));
+        this.registerSetting(ignoreBaby = new ButtonSetting("Ignore baby", "忽略幼苗", true));
     }
 
     @Override

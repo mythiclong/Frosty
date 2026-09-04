@@ -18,7 +18,7 @@ public class AutoReconnect extends Module {
     public AutoReconnect() {
         super("AutoReconnect", "自动重连", category.Other);
 
-        this.registerSetting(delay = new SliderSetting("Delay", 1000, 500, 5000, 100));
+        this.registerSetting(delay = new SliderSetting("Delay", 1000, 500, 5000, 100, "延迟"));
     }
 
     @EventHandler

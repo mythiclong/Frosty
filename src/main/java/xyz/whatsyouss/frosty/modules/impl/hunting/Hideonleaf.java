@@ -16,6 +16,7 @@ import xyz.whatsyouss.frosty.events.impl.PreUpdateEvent;
 import xyz.whatsyouss.frosty.events.impl.Render3DEvent;
 import xyz.whatsyouss.frosty.interfaces.ICameraOverriddenEntity;
 import xyz.whatsyouss.frosty.modules.Module;
+import xyz.whatsyouss.frosty.modules.impl.client.UI;
 import xyz.whatsyouss.frosty.settings.impl.ButtonSetting;
 import xyz.whatsyouss.frosty.settings.impl.SelectSetting;
 import xyz.whatsyouss.frosty.settings.impl.SliderSetting;
@@ -36,15 +37,18 @@ public class Hideonleaf extends Module {
     public Hideonleaf() {
         super("Shulkers", "树岛潜影贝", category.Hunting);
 
-        this.registerSetting(esp = new ButtonSetting("ESP", true));
-        this.registerSetting(hit = new ButtonSetting("Attack", true));
-        this.registerSetting(silent = new ButtonSetting("Silent", true));
-        this.registerSetting(offset = new SliderSetting("Height offset", "x", 1.2, 0.8, 1.6, 0.1));
-        this.registerSetting(range = new SliderSetting("Range", 2, 10, 2, 12, 0.5));
+        this.registerSetting(esp = new ButtonSetting("ESP", "透视", true));
+        this.registerSetting(hit = new ButtonSetting("Attack", "击回", true));
+        this.registerSetting(silent = new ButtonSetting("Silent", "静默转向", true));
+        this.registerSetting(offset = new SliderSetting("Height offset", "x", 1.2, 0.8, 1.6, 0.1, "瞄准高度偏移"));
+        this.registerSetting(range = new SliderSetting("Range", 2, 10, 2, 12, 0.5, "范围"));
     }
 
     @Override
     public String getDesc() {
+        if (UI.lang.getValue() == 1) {
+            return "树岛的潜影贝";
+        }
         return "Shulkers on Galatea";
     }
 
@@ -63,7 +67,7 @@ public class Hideonleaf extends Module {
         }
 
         Map<String, String> location = Utils.getCurrentLocation();
-        if (!Objects.equals(location.get("Area"), "Galatea")) {
+        if (!Objects.equals(location.get("Area"), "Moonglade Marsh")) {
             return;
         }
 
@@ -82,7 +86,7 @@ public class Hideonleaf extends Module {
         }
 
         Map<String, String> location = Utils.getCurrentLocation();
-        if (!Objects.equals(location.get("Area"), "Galatea")) {
+        if (!Objects.equals(location.get("Area"), "Moonglade Marsh")) {
             return;
         }
 

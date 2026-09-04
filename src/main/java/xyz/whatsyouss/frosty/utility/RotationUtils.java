@@ -119,7 +119,7 @@ public class RotationUtils {
         return entityHit != null && entityHit.getEntity() == target;
     }
 
-    public static void aimAtEntity(LocalPlayer target, float heightFraction, float smoothness) {
+    public static void aimAtEntity(Entity target, float heightFraction, float smoothness) {
         if (mc.player == null || target == null) return;
         Vec3 aimPos    = target.position().add(0,
                 Math.max(0.1, target.getBbHeight() * heightFraction), 0);

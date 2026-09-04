@@ -22,7 +22,8 @@ public class LushlilacNuker extends Module {
 
     public LushlilacNuker() {
         super("LushlilacNuker", "丁香光环", category.Foraging);
-        this.registerSetting(range = new SliderSetting("Range", 4.2, 3, 6, 0.1));
+
+        this.registerSetting(range = new SliderSetting("Range", 4.2, 3, 6, 0.1, "范围"));
     }
 
     @Override
@@ -31,7 +32,7 @@ public class LushlilacNuker extends Module {
             return;
         }
         Map<String, String> location = Utils.getCurrentLocation();
-        if (!Objects.equals(location.get("Area"), "Galatea")) {
+        if (!Objects.equals(location.get("Area"), "Moonglade Marsh")) {
             return;
         }
 

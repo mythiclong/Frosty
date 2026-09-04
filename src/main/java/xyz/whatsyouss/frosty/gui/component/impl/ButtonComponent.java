@@ -1,6 +1,7 @@
 package xyz.whatsyouss.frosty.gui.component.impl;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import xyz.whatsyouss.frosty.gui.LiquidGlassStyle;
 import xyz.whatsyouss.frosty.gui.component.Component;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
 import xyz.whatsyouss.frosty.settings.impl.ButtonSetting;
@@ -33,10 +34,15 @@ public class ButtonComponent extends Component {
         int toggleColor = setting.isToggled() ? 0xFF00AA00 : 0xFFAA0000;
         isHovered = mouseX >= x + width - 60 && mouseX <= x + width - 10 && mouseY >= y && mouseY <= y + height;
 
-        context.text(mc.font, setting.getName(), (int) (x + 2), (int) (y + height / 2 - 4), isLight ? 0xFF000000 : 0xFFFFFFFF, false);
+        context.text(mc.font, setting.getTransName(), (int) (x + 2), (int) (y + height / 2 - 4), LiquidGlassStyle.isEnabled() ? LiquidGlassStyle.textColor() : isLight ? 0xFF000000 : 0xFFFFFFFF, false);
 
-        context.fill(toggleX, (int) y, toggleX + toggleWidth, (int) (y + height), isLight ? 0xFF000000 : 0xFFFFFFFF);
-        context.fill(toggleX + 1, (int) y + 1, toggleX + toggleWidth - 1, (int) (y + height - 1), toggleColor);
+        if (LiquidGlassStyle.isEnabled()) {
+            LiquidGlassStyle.drawControl(context, toggleX, y, toggleWidth, height,
+                    setting.isToggled(), isHovered);
+        } else {
+            context.fill(toggleX, (int) y, toggleX + toggleWidth, (int) (y + height), isLight ? 0xFF000000 : 0xFFFFFFFF);
+            context.fill(toggleX + 1, (int) y + 1, toggleX + toggleWidth - 1, (int) (y + height - 1), toggleColor);
+        }
 
         String toggleText = setting.isToggled() ? "ON" : "OFF";
         int textWidth = mc.font.width(toggleText);
