@@ -6,6 +6,7 @@ import org.joml.Matrix3x2fStack;
 import xyz.whatsyouss.frosty.events.impl.ReceivePacketEvent;
 import xyz.whatsyouss.frosty.events.impl.Render2DEvent;
 import xyz.whatsyouss.frosty.modules.Module;
+import xyz.whatsyouss.frosty.settings.impl.ButtonSetting;
 import xyz.whatsyouss.frosty.settings.impl.SelectSetting;
 import xyz.whatsyouss.frosty.utility.MathUtils;
 import xyz.whatsyouss.frosty.utility.Theme;
@@ -21,15 +22,19 @@ public class TPS extends Module {
     private String[] CNcolors = new String[] {"彩虹", "粉樱", "棉花糖", "炽焰", "繁花", "流金", "灰阶", "皇室蓝", "晴空", "青藤"};
 
     private SelectSetting color;
+    public ButtonSetting showTPS;
+    public ButtonSetting showPing;
 
     private final ArrayDeque<Long> packetIntervals = new ArrayDeque<>(10);
     private long lastPacketTime;
     private int strColor;
 
     public TPS() {
-        super("TPS", "服务器刻数", category.Render);
+        super("TPS & Ping", "服务器刻数与延迟", category.Render);
 
         this.registerSetting(color = new SelectSetting("Color", "颜色", 0, colors, CNcolors));
+        this.registerSetting(showTPS = new ButtonSetting("Show TPS", "显示 TPS", true));
+        this.registerSetting(showPing = new ButtonSetting("Show Ping", "显示延迟", true));
     }
 
     @EventHandler
@@ -43,7 +48,23 @@ public class TPS extends Module {
         int x = 5;
         int y = mc.getWindow().getGuiScaledHeight() - 12;
 
-        event.drawContext.text(mc.font, "TPS: " + getTPS(), x, y, strColor, true);
+        StringBuilder text = new StringBuilder();
+
+        if (showTPS.isToggled()) {
+            text.append("TPS: ").append(getTPS());
+        }
+
+        if (showPing.isToggled()) {
+            if (text.length() > 0) {
+                text.append(" | ");
+            }
+            text.append("Ping: ").append(getPing()).append("ms");
+        }
+
+        if (text.length() > 0) {
+            event.drawContext.text(mc.font, text.toString(), x, y, strColor, true);
+        }
+
         matrices.popMatrix();
     }
 
@@ -100,6 +121,31 @@ public class TPS extends Module {
         BigDecimal bd = new BigDecimal(value);
         bd = bd.setScale(2, RoundingMode.HALF_UP);
         return bd.floatValue();
+    }
+
+    public int getPing() {
+        if (mc.getConnection() == null || mc.player == null) {
+            return 0;
+        }
+
+        var playerInfo = mc.getConnection().getPlayerInfo(mc.player.getUUID());
+        if (playerInfo == null) {
+            // Fallback: try getting from level player list
+            if (mc.level != null) {
+                for (var info : mc.level.players()) {
+                    if (info.getUUID().equals(mc.player.getUUID())) {
+                        playerInfo = mc.getConnection().getPlayerInfo(info.getUUID());
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (playerInfo == null) {
+            return 0;
+        }
+
+        return playerInfo.getLatency();
     }
 
     private int getCurrentColor() {

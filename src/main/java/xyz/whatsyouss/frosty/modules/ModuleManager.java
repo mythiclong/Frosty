@@ -19,6 +19,9 @@ import xyz.whatsyouss.frosty.modules.impl.movement.GuiMove;
 import xyz.whatsyouss.frosty.modules.impl.movement.Sprint;
 import xyz.whatsyouss.frosty.modules.impl.other.*;
 import xyz.whatsyouss.frosty.modules.impl.render.*;
+import xyz.whatsyouss.frosty.modules.impl.beta.PathfindingDebug;
+import xyz.whatsyouss.frosty.modules.impl.beta.FishHunter;
+import xyz.whatsyouss.frosty.modules.impl.beta.TurtleHunter;
 import xyz.whatsyouss.frosty.settings.Setting;
 
 import java.util.ArrayList;
@@ -100,6 +103,12 @@ public class ModuleManager {
     public static MurderMystery murderMystery;
     public static Nametags nametags;
     public static AntiTexture antiTexture;
+    public static Xray xray;
+
+    // Beta modules
+    public static PathfindingDebug pathfindingDebug;
+    public static FishHunter fishHunter;
+    public static TurtleHunter turtleHunter;
 
     public void register() {
         this.addModule(tps = new TPS());
@@ -172,6 +181,13 @@ public class ModuleManager {
         this.addModule(autoGift = new AutoGift());
         this.addModule(murderMystery = new MurderMystery());
         this.addModule(antiTexture = new AntiTexture());
+        this.addModule(xray = new Xray());
+
+        // Beta modules
+        this.addModule(pathfindingDebug = new PathfindingDebug());
+        this.addModule(fishHunter = new FishHunter());
+        this.addModule(turtleHunter = new TurtleHunter());
+
         modules.sort(Comparator.comparing(Module::getName));
     }
 

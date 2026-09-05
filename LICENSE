@@ -672,3 +672,24 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
+
+================================================================================
+THIRD-PARTY CODE ATTRIBUTIONS
+================================================================================
+
+This project incorporates code from the following open source projects:
+
+1. rdbtv5 Native Pathfinder
+   - Copyright: V5-Client organization
+   - License: GNU GPL v3.0
+   - Source: https://github.com/V5-Client/V5Loader
+   - Components: NativePathfinderJNI, PathManager, CachedWorld, Native libraries
+   - Modifications: Adapted for Frosty's architecture, removed Hypixel-specific code
+
+2. Booter Client Hunter Modules
+   - Author: Unknown (distributed as booter-client-1.0.0.jar without LICENSE)
+   - Components: FishHunter and TurtleHunter logic
+   - License: Assumed compatible with GPL-3.0 due to lack of restrictive license
+   - Modifications: Rewritten to fit Frosty's module system and event architecture
+
+All incorporated code is distributed under the same GNU GPL v3.0 license as Frosty.

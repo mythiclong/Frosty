@@ -2,13 +2,10 @@ package xyz.whatsyouss.frosty.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,7 +16,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.whatsyouss.frosty.interfaces.IEntityRenderState;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
@@ -38,42 +35,6 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
         return (mc.player == null) ? null : team;
     }
 
-    @Inject(method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V", at = @At("HEAD"), cancellable = true)
-    private void render$Head(S state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, CallbackInfo ci) {
-        Entity entity = ((IEntityRenderState) state).frosty$getEntity();
-        if (!(entity instanceof LivingEntity livingEntity)) return;
-
-        // Apply nametag scaling if enabled
-        if (ModuleManager.nametags.isEnabled() && entity instanceof Player) {
-            frosty$applyNametagScaling(poseStack, entity);
-        }
-    }
-
-    @Unique
-    private void frosty$applyNametagScaling(PoseStack poseStack, Entity entity) {
-        if (mc.player == null) return;
-
-        double distance = mc.player.distanceTo(entity);
-        float scale = (float) ModuleManager.nametags.scale.getInput();
-
-        // Apply distance-based scaling for entities far away
-        if (distance > 10) {
-            scale = scale * Math.max(0.2f, 1.0f - (float)(distance - 10) / 20);
-        }
-
-        // Store the scale for use in name rendering
-        // The actual name rendering happens later in the pipeline
-        poseStack.pushPose();
-        poseStack.scale(scale, scale, scale);
-        poseStack.popPose();
-    }
-
-    @Inject(method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V", at = @At("TAIL"))
-    private void render$Tail(S state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, CallbackInfo ci) {
-        Entity entity = ((IEntityRenderState) state).frosty$getEntity();
-        if (!(entity instanceof LivingEntity livingEntity)) return;
-    }
-
     @ModifyReturnValue(method = "getRenderType", at = @At("RETURN"))
     private RenderType frosty$chamsRenderType(RenderType original, S state, boolean visible, boolean translucent, boolean glowing) {
         Entity entity = ((IEntityRenderState) state).frosty$getEntity();
@@ -89,6 +50,31 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
     private void shouldForceLabel(LivingEntity entity, double distanceSq, CallbackInfoReturnable<Boolean> cir) {
         if (ModuleManager.nametags.isEnabled())
             cir.setReturnValue(true);
+    }
+
+    @ModifyVariable(method = "renderNameTag(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+            at = @At("HEAD"), ordinal = 0, argsOnly = true)
+    private LivingEntityRenderState modifyNametagScale(LivingEntityRenderState state) {
+        if (ModuleManager.nametags.isEnabled()) {
+            Entity entity = ((IEntityRenderState) state).frosty$getEntity();
+            if (entity instanceof Player && mc.player != null) {
+                // Store the custom scale in the state for later use
+                frosty$customScale = (float) ModuleManager.nametags.scale.getInput();
+            }
+        }
+        return state;
+    }
+
+    @Unique
+    private float frosty$customScale = 1.0f;
+
+    @ModifyExpressionValue(method = "renderNameTag(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+            at = @At(value = "CONSTANT", args = "floatValue=0.025"))
+    private float modifyNametagBaseScale(float original) {
+        if (ModuleManager.nametags.isEnabled()) {
+            return original * frosty$customScale;
+        }
+        return original;
     }
 
     @Unique

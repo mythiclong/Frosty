@@ -6,6 +6,8 @@
   "plugin": "xyz.whatsyouss.frosty.mixin.FrostyMixinPlugin",
   "mixins": [
     "AvatarRendererMixin",
+    "BlockStateXrayMixin",
+    "BlockXrayMixin",
     "BossHealthOverlayMixin",
     "CameraMixin",
     "ChatScreenMixin",
@@ -38,6 +40,7 @@
     "LocalPlayerMixin",
     "MinecraftMixin",
     "MobRendererMixin",
+    "ModelBlockRendererXrayMixin",
     "MouseHandlerMixin",
     "MultiPlayerGameModeMixin",
     "PackMixin",
@@ -45,6 +48,7 @@
     "PlayerMixin",
     "ScreenEffectRendererMixin",
     "ScreenMixin",
+    "SectionCompilerXrayMixin",
     "ServerboundUseItemPacketMixin",
     "StringDecomposerMixin",
     "TooltipRenderUtilMixin",
@@ -53,7 +57,8 @@
     "accessor.AbstractContainerScreenAccessor",
     "accessor.ClientboundSetEntityMotionPacketAccessor",
     "accessor.KeyMappingAccessor",
-    "accessor.MinecraftAccessor"
+    "accessor.MinecraftAccessor",
+    "InventoryAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
