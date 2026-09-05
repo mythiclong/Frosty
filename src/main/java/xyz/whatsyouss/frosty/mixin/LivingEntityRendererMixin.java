@@ -16,7 +16,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.whatsyouss.frosty.interfaces.IEntityRenderState;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
@@ -50,31 +49,6 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
     private void shouldForceLabel(LivingEntity entity, double distanceSq, CallbackInfoReturnable<Boolean> cir) {
         if (ModuleManager.nametags.isEnabled())
             cir.setReturnValue(true);
-    }
-
-    @ModifyVariable(method = "renderNameTag(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
-            at = @At("HEAD"), ordinal = 0, argsOnly = true)
-    private LivingEntityRenderState modifyNametagScale(LivingEntityRenderState state) {
-        if (ModuleManager.nametags.isEnabled()) {
-            Entity entity = ((IEntityRenderState) state).frosty$getEntity();
-            if (entity instanceof Player && mc.player != null) {
-                // Store the custom scale in the state for later use
-                frosty$customScale = (float) ModuleManager.nametags.scale.getInput();
-            }
-        }
-        return state;
-    }
-
-    @Unique
-    private float frosty$customScale = 1.0f;
-
-    @ModifyExpressionValue(method = "renderNameTag(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
-            at = @At(value = "CONSTANT", args = "floatValue=0.025"))
-    private float modifyNametagBaseScale(float original) {
-        if (ModuleManager.nametags.isEnabled()) {
-            return original * frosty$customScale;
-        }
-        return original;
     }
 
     @Unique
