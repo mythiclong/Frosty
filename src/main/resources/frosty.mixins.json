@@ -46,7 +46,6 @@
     "ScreenMixin",
     "ServerboundUseItemPacketMixin",
     "StringDecomposerMixin",
-    "SubmitNodeCollectionMixin",
     "TooltipRenderUtilMixin",
     "Vec3Mixin",
     "VisGraphMixin",
