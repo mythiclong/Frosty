@@ -42,6 +42,30 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
     private void render$Head(S state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, CallbackInfo ci) {
         Entity entity = ((IEntityRenderState) state).frosty$getEntity();
         if (!(entity instanceof LivingEntity livingEntity)) return;
+
+        // Apply nametag scaling if enabled
+        if (ModuleManager.nametags.isEnabled() && entity instanceof Player) {
+            frosty$applyNametagScaling(poseStack, entity);
+        }
+    }
+
+    @Unique
+    private void frosty$applyNametagScaling(PoseStack poseStack, Entity entity) {
+        if (mc.player == null) return;
+
+        double distance = mc.player.distanceTo(entity);
+        float scale = (float) ModuleManager.nametags.scale.getInput();
+
+        // Apply distance-based scaling for entities far away
+        if (distance > 10) {
+            scale = scale * Math.max(0.2f, 1.0f - (float)(distance - 10) / 20);
+        }
+
+        // Store the scale for use in name rendering
+        // The actual name rendering happens later in the pipeline
+        poseStack.pushPose();
+        poseStack.scale(scale, scale, scale);
+        poseStack.popPose();
     }
 
     @Inject(method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V", at = @At("TAIL"))
