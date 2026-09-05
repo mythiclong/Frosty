@@ -52,7 +52,7 @@ dependencies {
 	implementation "meteordevelopment:orbit:0.2.3"
 
 	// Sodium - optional dependency for Xray optimization
-	modCompileOnly "maven.modrinth:sodium:mc1.21.4-0.6.6-fabric"
+	compileOnly "maven.modrinth:sodium:mc1.21.4-0.6.6-fabric"
 
 	configurations.libImpl.dependencies.each {
 		implementation(it)
