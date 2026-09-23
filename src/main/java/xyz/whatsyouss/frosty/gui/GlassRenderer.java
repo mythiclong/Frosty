@@ -76,8 +76,8 @@ public final class GlassRenderer {
 
     private static void ensureResources(int width, int height) {
         if (glassPipeline == null) {
-            glassPipeline = pipeline("liquid_glass", GLASS_FRAGMENT, "PanelInfo", "Sampler0", "Sampler1");
-            blurPipeline = pipeline("liquid_glass_blur", BLUR_FRAGMENT, "BlurConfig", "DiffuseSampler");
+            glassPipeline = pipeline("liquid_glass", GLASS_FRAGMENT, true, "PanelInfo", "Sampler0", "Sampler1");
+            blurPipeline = pipeline("liquid_glass_blur", BLUR_FRAGMENT, false, "BlurConfig", "DiffuseSampler");
             RenderSystem.getDevice().precompilePipeline(glassPipeline, null);
             RenderSystem.getDevice().precompilePipeline(blurPipeline, null);
         }
@@ -100,7 +100,8 @@ public final class GlassRenderer {
         }
     }
 
-    private static RenderPipeline pipeline(String name, Identifier fragment, String uniform, String... samplers) {
+    private static RenderPipeline pipeline(String name, Identifier fragment, boolean depth,
+                                           String uniform, String... samplers) {
         BindGroupLayout.Builder layout = BindGroupLayout.builder()
                 .withUniform("SamplerInfo", UniformType.UNIFORM_BUFFER)
                 .withUniform(uniform, UniformType.UNIFORM_BUFFER);
@@ -108,15 +109,21 @@ public final class GlassRenderer {
             layout.withSampler(sampler);
         }
 
-        return RenderPipelines.register(RenderPipeline.builder()
+        // 26.2 Vulkan 后端：DepthStencilState 非 null 的管线只创建带深度变体，
+        // 无深度变体句柄为 0，在无深度 RenderPass 中 setPipeline 会让
+        // vkCmdBindPipeline 绑定空句柄直接 native 崩溃。因此：
+        // 合成 pass（主目标带深度附件）用带深度管线；模糊 pass（无深度附件）必须不设置 DepthStencilState。
+        RenderPipeline.Builder builder = RenderPipeline.builder()
                 .withLocation(Identifier.parse("frosty:pipeline/" + name))
                 .withVertexShader(GLASS_VERTEX)
                 .withFragmentShader(fragment)
                 .withBindGroupLayout(layout.build())
-                .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
                 .withVertexBinding(0, DefaultVertexFormat.POSITION)
-                .withPrimitiveTopology(PrimitiveTopology.QUADS)
-                .build());
+                .withPrimitiveTopology(PrimitiveTopology.QUADS);
+        if (depth) {
+            builder.withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false));
+        }
+        return RenderPipelines.register(builder.build());
     }
 
     private static GpuTexture createTarget(String label, int width, int height) {
