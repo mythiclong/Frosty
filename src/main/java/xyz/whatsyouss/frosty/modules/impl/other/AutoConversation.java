@@ -6,6 +6,7 @@ import java.util.List;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.StringUtil;
 import xyz.whatsyouss.frosty.events.impl.PreUpdateEvent;
 import xyz.whatsyouss.frosty.events.impl.ReceiveMessageEvent;
 import xyz.whatsyouss.frosty.modules.Module;
@@ -41,7 +42,11 @@ public class AutoConversation extends Module {
     public void onReceiveMessage(ReceiveMessageEvent event) {
         if (!Utils.nullCheck()) return;
 
-        String plain = event.getMessage().getString().trim();
+        // Hypixel 的消息文本内嵌 § 格式码，Component.getString() 不会剥离它们
+        // （V5 的 getUnformattedText 会剥离），必须先 stripColor 再做前缀匹配
+        String plain = StringUtil.stripColor(event.getMessage().getString());
+        if (plain == null) return;
+        plain = plain.trim();
         if (!plain.startsWith("[NPC]") && !plain.startsWith("Select an option:")) return;
 
         List<String> commands = new ArrayList<>();

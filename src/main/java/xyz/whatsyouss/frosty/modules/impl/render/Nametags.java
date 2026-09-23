@@ -189,7 +189,8 @@ public class Nametags extends Module {
             float x1 = -width / 2f - 1;
             float y1 = -1;
             float x2 = width / 2f + (shadow.isToggled() ? 1 : 0);
-            float y2 = font.lineHeight + (shadow.isToggled() ? 1 : 0);
+            // OpenMyau 对齐：底部 = lineHeight - 1 + (shadow ? 1 : 0)，多一行会显得背景比字高
+            float y2 = font.lineHeight - 1 + (shadow.isToggled() ? 1 : 0);
 
             VertexConsumer quads = bs.getBuffer(RenderLayers.ESP_QUADS);
             // 两种绕序各发一次，规避面剔除

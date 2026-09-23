@@ -101,6 +101,7 @@ public class ModuleManager {
     public static MurderMystery murderMystery;
     public static Nametags nametags;
     public static AntiTexture antiTexture;
+    public static Chams chams;
     public static AutoConversation autoConversation;
     public static RatProtection ratProtection;
 
@@ -126,6 +127,7 @@ public class ModuleManager {
         this.addModule(axolotlESP = new AxolotlESP());
         this.addModule(antiBot = new AntiBot());
         this.addModule(playerESP = new PlayerESP());
+        this.addModule(chams = new Chams());
         this.addModule(nametags = new Nametags());
         this.addModule(frozenTreasure = new FrozenTreasure());
         this.addModule(sandNuker = new SandNuker());

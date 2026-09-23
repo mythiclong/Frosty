@@ -33,16 +33,7 @@ public class Xray extends Module {
     public final SliderSetting opacity = new SliderSetting("Opacity", 160.0, 10.0, 255.0, 5.0);
     public final ButtonSetting esp = new ButtonSetting("ESP", true);
     public final ButtonSetting outline = new ButtonSetting("Outline", true);
-    public final ButtonSetting coal = new ButtonSetting("Coal Ore", true);
-    public final ButtonSetting redstone = new ButtonSetting("Redstone Ore", true);
-    public final ButtonSetting iron = new ButtonSetting("Iron Ore", true);
-    public final ButtonSetting gold = new ButtonSetting("Gold Ore", true);
-    public final ButtonSetting diamond = new ButtonSetting("Diamond Ore", true);
-    public final ButtonSetting emerald = new ButtonSetting("Emerald Ore", true);
-    public final ButtonSetting lapis = new ButtonSetting("Lapis Ore", true);
-    public final ButtonSetting copper = new ButtonSetting("Copper Ore", true);
-    public final ButtonSetting debris = new ButtonSetting("Ancient Debris", true);
-    public final ButtonSetting quartz = new ButtonSetting("Quartz Ore", false);
+    public final ButtonSetting polishedDiorite = new ButtonSetting("Polished Diorite", true);
 
     private long lastScan;
     private long rebuildAt;
@@ -62,21 +53,12 @@ public class Xray extends Module {
         registerSetting(opacity);
         registerSetting(esp);
         registerSetting(outline);
-        registerSetting(coal);
-        registerSetting(redstone);
-        registerSetting(iron);
-        registerSetting(gold);
-        registerSetting(diamond);
-        registerSetting(emerald);
-        registerSetting(lapis);
-        registerSetting(copper);
-        registerSetting(debris);
-        registerSetting(quartz);
+        registerSetting(polishedDiorite);
     }
 
     @Override
     public String getDesc() {
-        return "See selected ores through walls with configurable transparency and ESP.";
+        return "See selected blocks through walls with configurable transparency and ESP.";
     }
 
     @Override
@@ -224,35 +206,8 @@ public class Xray extends Module {
     }
 
     private Ore oreFor(Block block) {
-        if (block == Blocks.COAL_ORE || block == Blocks.DEEPSLATE_COAL_ORE) {
-            return coal.isToggled() ? Ore.COAL : null;
-        }
-        if (block == Blocks.REDSTONE_ORE || block == Blocks.DEEPSLATE_REDSTONE_ORE) {
-            return redstone.isToggled() ? Ore.REDSTONE : null;
-        }
-        if (block == Blocks.IRON_ORE || block == Blocks.DEEPSLATE_IRON_ORE) {
-            return iron.isToggled() ? Ore.IRON : null;
-        }
-        if (block == Blocks.GOLD_ORE || block == Blocks.DEEPSLATE_GOLD_ORE || block == Blocks.NETHER_GOLD_ORE) {
-            return gold.isToggled() ? Ore.GOLD : null;
-        }
-        if (block == Blocks.DIAMOND_ORE || block == Blocks.DEEPSLATE_DIAMOND_ORE) {
-            return diamond.isToggled() ? Ore.DIAMOND : null;
-        }
-        if (block == Blocks.EMERALD_ORE || block == Blocks.DEEPSLATE_EMERALD_ORE) {
-            return emerald.isToggled() ? Ore.EMERALD : null;
-        }
-        if (block == Blocks.LAPIS_ORE || block == Blocks.DEEPSLATE_LAPIS_ORE) {
-            return lapis.isToggled() ? Ore.LAPIS : null;
-        }
-        if (block == Blocks.COPPER_ORE || block == Blocks.DEEPSLATE_COPPER_ORE) {
-            return copper.isToggled() ? Ore.COPPER : null;
-        }
-        if (block == Blocks.ANCIENT_DEBRIS) {
-            return debris.isToggled() ? Ore.DEBRIS : null;
-        }
-        if (block == Blocks.NETHER_QUARTZ_ORE) {
-            return quartz.isToggled() ? Ore.QUARTZ : null;
+        if (block == Blocks.POLISHED_DIORITE) {
+            return polishedDiorite.isToggled() ? Ore.POLISHED_DIORITE : null;
         }
         return null;
     }
@@ -266,10 +221,7 @@ public class Xray extends Module {
     }
 
     private String oreSettingSignature() {
-        return coal.isToggled() + ":" + redstone.isToggled() + ":" + iron.isToggled() + ":"
-                + gold.isToggled() + ":" + diamond.isToggled() + ":" + emerald.isToggled() + ":"
-                + lapis.isToggled() + ":" + copper.isToggled() + ":" + debris.isToggled() + ":"
-                + quartz.isToggled();
+        return String.valueOf(polishedDiorite.isToggled());
     }
 
     private void reloadWorldRenderer() {
@@ -390,16 +342,7 @@ public class Xray extends Module {
     }
 
     private enum Ore {
-        COAL(new Color(0x3B3B3B)),
-        REDSTONE(new Color(0xFF3131)),
-        IRON(new Color(0xD8B77E)),
-        GOLD(new Color(0xFFE45D)),
-        DIAMOND(new Color(0x42E8FF)),
-        EMERALD(new Color(0x37F06D)),
-        LAPIS(new Color(0x466CFF)),
-        COPPER(new Color(0xF09254)),
-        DEBRIS(new Color(0x8E5A46)),
-        QUARTZ(new Color(0xECE6D4));
+        POLISHED_DIORITE(new Color(0xD8CDC7));
 
         private final Color color;
 

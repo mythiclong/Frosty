@@ -55,6 +55,14 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
         if (frosty$shouldRenderPlayerChams(entity)) {
             return RenderLayers.entityTranslucentNoDepth(getTextureLocation(state));
         }
+        // Chams 模块：original 为 null 说明实体对玩家不可见（隐形等），
+        // 与 OpenMyau 行为一致——只穿透已渲染的几何体，不暴露隐形实体
+        if (original != null
+                && ModuleManager.chams != null
+                && ModuleManager.chams.isEnabled()
+                && ModuleManager.chams.shouldRender(entity)) {
+            return RenderLayers.entityTranslucentNoDepth(getTextureLocation(state));
+        }
         return original;
     }
 
