@@ -63,6 +63,7 @@ public class Utils {
     }
 
     public static List<String> getScoreboardSidebarLines() {
+        if (mc.level == null) return Collections.emptyList();
         Scoreboard scoreboard = mc.level.getScoreboard();
         if (scoreboard == null) return Collections.emptyList();
 
@@ -686,7 +687,10 @@ public class Utils {
         final ArrayList<PlayerInfo> list = new ArrayList<>(mc.getConnection().getOnlinePlayers().stream().toList());
         removeDuplicates(list);
         if (removeSelf) {
-            list.remove(mc.player.getName());
+            // 原来用 String 去移除 List<PlayerInfo>，永远不会生效；改为按 UUID 匹配
+            list.removeIf(info -> info.getProfile() != null
+                    && mc.player != null
+                    && info.getProfile().id().equals(mc.player.getUUID()));
         }
         return list;
     }

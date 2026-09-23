@@ -4,20 +4,11 @@ import net.minecraft.client.KeyMapping;
 
 public interface IKeyMapping {
 
-    public default boolean frosty$isActuallyDown()
-    {
-        return frosty$isActuallyDown();
-    }
+    boolean frosty$isActuallyDown();
 
-    public default void frosty$resetPressedState()
-    {
-        frosty$resetPressedState();
-    }
+    void frosty$resetPressedState();
 
-    public default void frosty$simulatePress(boolean pressed)
-    {
-        frosty$simulatePress(pressed);
-    }
+    void frosty$simulatePress(boolean pressed);
 
     public default void setDown(boolean down)
     {

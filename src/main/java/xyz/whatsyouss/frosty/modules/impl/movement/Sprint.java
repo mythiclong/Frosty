@@ -29,7 +29,10 @@ public class Sprint extends Module {
 
     @EventHandler
     public void onPreUpdate(PreUpdateEvent event) {
-        if (!Utils.nullCheck() && mc.gui.screen().isFocused()) {
+        if (!Utils.nullCheck()) {
+            return;
+        }
+        if (mc.gui.screen() != null && mc.gui.screen().isFocused()) {
             return;
         }
         if (mc.player.zza != 0) {

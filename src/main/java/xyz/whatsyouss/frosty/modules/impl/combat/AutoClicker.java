@@ -65,18 +65,23 @@ public class AutoClicker extends Module {
     @EventHandler
     public void onMouseButton(MouseButtonEvent event) {
         if (event.action == KeyAction.Press) {
-            if (event.button == mc.options.keyAttack.getDefaultKey().getValue()) {
+            if (isBoundToMouse(mc.options.keyAttack, event.button)) {
                 pressingLeft = true;
-            } else if (event.button == mc.options.keyUse.getDefaultKey().getValue()) {
+            } else if (isBoundToMouse(mc.options.keyUse, event.button)) {
                 pressingRight = true;
             }
         } else if (event.action == KeyAction.Release) {
-            if (event.button == mc.options.keyAttack.getDefaultKey().getValue()) {
+            if (isBoundToMouse(mc.options.keyAttack, event.button)) {
                 pressingLeft = false;
-            } else if (event.button == mc.options.keyUse.getDefaultKey().getValue()) {
+            } else if (isBoundToMouse(mc.options.keyUse, event.button)) {
                 pressingRight = false;
             }
         }
+    }
+
+    // 按用户实际绑定的鼠标键判断，而不是默认键位（26.2 用公开的 matches(Key)，key 字段是 protected）
+    private static boolean isBoundToMouse(net.minecraft.client.KeyMapping mapping, int button) {
+        return mapping.matches(com.mojang.blaze3d.platform.InputConstants.Type.MOUSE.getOrCreate(button));
     }
 
     @EventHandler
