@@ -4,6 +4,7 @@ import meteordevelopment.orbit.EventBus;
 import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.orbit.IEventBus;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 
 import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -28,6 +29,10 @@ import java.util.function.Supplier;
 
 public class Frosty implements ModInitializer {
 	public static final String MOD_ID = "frosty";
+	// 从 Fabric 元数据动态读取完整版本号（含 beta 后缀），避免硬编码过期
+	public static final String MOD_VERSION = FabricLoader.getInstance().getModContainer(MOD_ID)
+			.map(container -> container.getMetadata().getVersion().getFriendlyString())
+			.orElse("unknown");
 	public static Minecraft mc;
 	public static final IEventBus EVENT_BUS = new EventBus();
 	boolean applied = false;

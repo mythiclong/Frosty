@@ -32,6 +32,7 @@ public class ModuleManager {
     public static TPS tps;
     public static GuiMove guiMove;
     public static UI ui;
+    public static Update update;
     public static HUD hud;
     public static Velocity velocity;
 //    public static BlockOverlay blockOverlay;
@@ -82,7 +83,7 @@ public class ModuleManager {
 //    public static SecretAura secretAura;
     public static MithrilMacro mithrilMacro;
     public static UngrabMouse ungrabMouse;
-//    public static CommissionMacro commissionMacro;
+    public static CommissionMacro commissionMacro;
     public static FarmingMacro farmingMacro;
     public static FarmingProtector farmingProtector;
     public static PestESP pestESP;
@@ -104,11 +105,13 @@ public class ModuleManager {
     public static Chams chams;
     public static AutoConversation autoConversation;
     public static RatProtection ratProtection;
+    public static WormLavaESP wormLavaESP;
 
     public void register() {
         this.addModule(tps = new TPS());
         this.addModule(guiMove = new GuiMove());
         this.addModule(ui = new UI());
+        this.addModule(update = new Update());
         this.addModule(autoReconnect = new AutoReconnect());
 //        this.addModule(scheduler = new Scheduler());
 //        this.addModule(chLobbySwitcher = new CHLobbySwitcher());
@@ -160,7 +163,7 @@ public class ModuleManager {
 //        this.addModule(secretAura = new SecretAura());
         this.addModule(mithrilMacro = new MithrilMacro());
         this.addModule(ungrabMouse = new UngrabMouse());
-//        this.addModule(commissionMacro = new CommissionMacro());
+        this.addModule(commissionMacro = new CommissionMacro());
         this.addModule(farmingMacro = new FarmingMacro());
         this.addModule(farmingProtector = new FarmingProtector());
         this.addModule(pestCleaner = new PestCleaner());
@@ -180,6 +183,7 @@ public class ModuleManager {
         this.addModule(antiTexture = new AntiTexture());
         this.addModule(autoConversation = new AutoConversation());
         this.addModule(ratProtection = new RatProtection());
+        this.addModule(wormLavaESP = new WormLavaESP());
         modules.sort(Comparator.comparing(Module::getName));
     }
 

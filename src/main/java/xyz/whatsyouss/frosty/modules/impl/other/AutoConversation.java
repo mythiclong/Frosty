@@ -17,7 +17,7 @@ import xyz.whatsyouss.frosty.utility.Utils;
 /**
  * 自动 NPC 对话（参考 V5-Client 的 AutoConversation.js，重写为 Java / MC 26.2）。
  *
- * 收到以 "[NPC]" 或 "Select an option:" 开头、且带 RUN_COMMAND 点击选项的聊天消息时，
+ * 收到包含 "[NPC]" 或 "Select an option:"、且带 RUN_COMMAND 点击选项的聊天消息时，
  * 延迟指定 tick 后自动执行第一个选项的命令。actionToken 机制保证：
  * 模块关闭或新选项消息到达后，尚未执行的旧任务自动作废。
  */
@@ -43,11 +43,13 @@ public class AutoConversation extends Module {
         if (!Utils.nullCheck()) return;
 
         // Hypixel 的消息文本内嵌 § 格式码，Component.getString() 不会剥离它们
-        // （V5 的 getUnformattedText 会剥离），必须先 stripColor 再做前缀匹配
+        // （V5 的 getUnformattedText 会剥离），必须先 stripColor 再做匹配。
+        // 注意：不能用 startsWith —— 部分聊天增强模组（如 multistatus）会给每条消息
+        // 前置一个 "[HH:MM:SS] " 时间戳 sibling，拼接后的字符串不再以 NPC 文本开头，
+        // 因此这里用 contains 做包含匹配
         String plain = StringUtil.stripColor(event.getMessage().getString());
         if (plain == null) return;
-        plain = plain.trim();
-        if (!plain.startsWith("[NPC]") && !plain.startsWith("Select an option:")) return;
+        if (!plain.contains("[NPC]") && !plain.contains("Select an option:")) return;
 
         List<String> commands = new ArrayList<>();
         collectCommands(event.getMessage(), commands);

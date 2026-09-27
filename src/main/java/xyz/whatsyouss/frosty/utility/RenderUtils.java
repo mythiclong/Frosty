@@ -372,6 +372,39 @@ public class RenderUtils {
         bs.uploadAndDraw();
     }
 
+    public static void drawBoxes(BufferSource buffers, PoseStack stack, Collection<ColoredBox> boxes,
+                                 float fillAlpha, float outlineAlpha, float lineWidth,
+                                 boolean drawFill, boolean drawOutline, boolean depthTest) {
+        if (boxes.isEmpty()) {
+            return;
+        }
+
+        Vec3 cam = mc.getEntityRenderDispatcher().camera.position();
+
+        if (drawFill) {
+            VertexConsumer buffer = buffers.getBuffer(RenderLayers.getQuads(depthTest));
+            for (ColoredBox coloredBox : boxes) {
+                int color = withAlpha(coloredBox.color(), fillAlpha);
+                drawSolidBoxInternal(stack, buffer, coloredBox.box().move(-cam.x, -cam.y, -cam.z), color);
+            }
+        }
+
+        if (drawOutline) {
+            VertexConsumer buffer = buffers.getBuffer(RenderLayers.getLines(depthTest));
+            for (ColoredBox coloredBox : boxes) {
+                int color = withAlpha(coloredBox.color(), outlineAlpha);
+                drawOutlinedBoxInternal(stack, buffer, coloredBox.box().move(-cam.x, -cam.y, -cam.z), color, lineWidth);
+            }
+        }
+
+        buffers.uploadAndDraw();
+    }
+
+    private static int withAlpha(Color color, float alpha) {
+        int a = Mth.clamp(Math.round(alpha * 255.0f), 0, 255);
+        return a << 24 | color.getRGB() & 0x00FFFFFF;
+    }
+
     private static void drawSolidBoxInternal(PoseStack matrices, VertexConsumer buffer, AABB box, int color) {
         PoseStack.Pose entry = matrices.last();
         float x1 = (float) box.minX, y1 = (float) box.minY, z1 = (float) box.minZ;
@@ -430,39 +463,6 @@ public class RenderUtils {
         }
         drawBoxes(new BufferSource(), stack, boxes, fillAlpha, outlineAlpha, lineWidth,
                 drawFill, drawOutline, depthTest);
-    }
-
-    public static void drawBoxes(BufferSource buffers, PoseStack stack, Collection<ColoredBox> boxes,
-                                 float fillAlpha, float outlineAlpha, float lineWidth,
-                                 boolean drawFill, boolean drawOutline, boolean depthTest) {
-        if (boxes.isEmpty()) {
-            return;
-        }
-
-        Vec3 cam = mc.getEntityRenderDispatcher().camera.position();
-
-        if (drawFill) {
-            VertexConsumer buffer = buffers.getBuffer(RenderLayers.getQuads(depthTest));
-            for (ColoredBox coloredBox : boxes) {
-                int color = withAlpha(coloredBox.color(), fillAlpha);
-                drawSolidBoxInternal(stack, buffer, coloredBox.box().move(-cam.x, -cam.y, -cam.z), color);
-            }
-        }
-
-        if (drawOutline) {
-            VertexConsumer buffer = buffers.getBuffer(RenderLayers.getLines(depthTest));
-            for (ColoredBox coloredBox : boxes) {
-                int color = withAlpha(coloredBox.color(), outlineAlpha);
-                drawOutlinedBoxInternal(stack, buffer, coloredBox.box().move(-cam.x, -cam.y, -cam.z), color, lineWidth);
-            }
-        }
-
-        buffers.uploadAndDraw();
-    }
-
-    private static int withAlpha(Color color, float alpha) {
-        int a = Mth.clamp(Math.round(alpha * 255.0f), 0, 255);
-        return a << 24 | color.getRGB() & 0x00FFFFFF;
     }
 
     private static void drawOutlinedBoxInternal(PoseStack matrices, VertexConsumer buffer, AABB box, int color, float lineWidth) {

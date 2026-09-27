@@ -1,6 +1,5 @@
 package xyz.whatsyouss.frosty.gui;
 
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.Screen;
@@ -30,7 +29,6 @@ import static xyz.whatsyouss.frosty.Frosty.mc;
 
 public class ClickGui extends Screen {
     private static ClickGui instance;
-    private static String cachedVersion;
     private float x, y, width, height;
     private boolean dragging;
     private float dragX, dragY;
@@ -66,15 +64,6 @@ public class ClickGui extends Screen {
         }
 
         updateModuleComponents();
-    }
-
-    private static String getModVersion() {
-        if (cachedVersion == null) {
-            cachedVersion = FabricLoader.getInstance().getModContainer("frosty")
-                    .map(container -> container.getMetadata().getVersion().getFriendlyString())
-                    .orElse("unknown");
-        }
-        return cachedVersion;
     }
 
     public static ClickGui getInstance() {
@@ -141,7 +130,8 @@ public class ClickGui extends Screen {
                     isLight ? new Color(240, 240, 240).getRGB() : new Color(60, 60, 60).getRGB());
         }
 
-        context.text(this.font, "Frosty " + getModVersion(), (int) ((x + width / 2) / scale), (int) ((y + 6) / scale), Color.WHITE.getRGB());
+        String version = Frosty.MOD_VERSION;
+        context.text(this.font, "Frosty " + version, (int) ((x + width / 2) / scale), (int) ((y + 6) / scale), Color.WHITE.getRGB());
 
         for (CategoryComponent component : categoryComponents) {
             component.render(context, mouseX, mouseY, delta);

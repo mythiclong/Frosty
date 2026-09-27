@@ -1,14 +1,16 @@
 package xyz.whatsyouss.frosty.modules.impl.render;
 
-import com.mojang.blaze3d.vertex.QuadInstance;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.world.phys.AABB;
 import xyz.whatsyouss.frosty.events.impl.Render3DEvent;
+import xyz.whatsyouss.frosty.events.impl.ChunkOcclusionEvent;
 import xyz.whatsyouss.frosty.modules.Module;
 import xyz.whatsyouss.frosty.modules.ModuleManager;
 import xyz.whatsyouss.frosty.settings.impl.ButtonSetting;
@@ -23,42 +25,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Xray extends Module {
-    private static final ThreadLocal<Boolean> TRANSLUCENT_LAYER =
-            ThreadLocal.withInitial(() -> Boolean.FALSE);
     private static final long SCAN_INTERVAL_MS = 1_500L;
     private static final long REBUILD_DEBOUNCE_MS = 200L;
     private static final int SCAN_BLOCK_BUDGET = 65_536;
 
-    public final SliderSetting distance = new SliderSetting("Distance", " blocks", 48.0, 8.0, 96.0, 4.0);
-    public final SliderSetting opacity = new SliderSetting("Opacity", 160.0, 10.0, 255.0, 5.0);
-    public final ButtonSetting esp = new ButtonSetting("ESP", true);
-    public final ButtonSetting outline = new ButtonSetting("Outline", true);
-    public final ButtonSetting polishedDiorite = new ButtonSetting("Polished Diorite", true);
+    public SliderSetting distance;
+    public SliderSetting opacity;
+    public ButtonSetting ore;
+    public ButtonSetting glass;
+    public ButtonSetting esp;
 
     private long lastScan;
     private long rebuildAt;
     private int lastRange = -1;
     private String observedRenderSignature = "";
     private String appliedRenderSignature = "";
-    private String lastOreSignature = "";
+    private String lastTargetSignature = "";
     private WeakReference<ClientLevel> scannedLevel = new WeakReference<>(null);
-    private List<RenderUtils.ColoredBox> targets = List.of();
+    private List<RenderUtils.ColoredBox> oreTargets = List.of();
+    private List<RenderUtils.ColoredBox> glassTargets = List.of();
     private ScanTask scanTask;
     private boolean lastEspEnabled;
     private BufferSource boxBuffer;
 
     public Xray() {
         super("Xray", "矿物透视", category.Render);
-        registerSetting(distance);
-        registerSetting(opacity);
-        registerSetting(esp);
-        registerSetting(outline);
-        registerSetting(polishedDiorite);
-    }
 
-    @Override
-    public String getDesc() {
-        return "See selected blocks through walls with configurable transparency and ESP.";
+        this.registerSetting(distance = new SliderSetting("Distance", " blocks", 64, 16, 256, 4, "范围"));
+        this.registerSetting(opacity = new SliderSetting("Opacity", "%", 10, 0, 99, 1, "透明度"));
+        this.registerSetting(ore = new ButtonSetting("Polished Diorite", "磨制闪长岩", true));
+        this.registerSetting(glass = new ButtonSetting("Glass", "玻璃", true));
+        this.registerSetting(esp = new ButtonSetting("ESP", "方块透视", true));
     }
 
     @Override
@@ -68,7 +65,7 @@ public class Xray extends Module {
         lastRange = -1;
         observedRenderSignature = settingSignature();
         appliedRenderSignature = observedRenderSignature;
-        lastOreSignature = oreSettingSignature();
+        lastTargetSignature = targetSettingSignature();
         scannedLevel.clear();
         scanTask = null;
         lastEspEnabled = esp.isToggled();
@@ -77,10 +74,10 @@ public class Xray extends Module {
 
     @Override
     public void onDisable() {
-        targets = List.of();
+        oreTargets = List.of();
+        glassTargets = List.of();
         scannedLevel.clear();
         scanTask = null;
-        TRANSLUCENT_LAYER.remove();
         closeBoxBuffer();
         reloadWorldRenderer();
     }
@@ -89,21 +86,21 @@ public class Xray extends Module {
     public void onUpdate() {
         if (esp.isToggled() != lastEspEnabled) {
             lastEspEnabled = esp.isToggled();
-            targets = List.of();
+            oreTargets = List.of();
+            glassTargets = List.of();
             scanTask = null;
             lastScan = 0L;
             lastRange = -1;
-            if (!lastEspEnabled) {
-                closeBoxBuffer();
-            }
+            if (!lastEspEnabled) closeBoxBuffer();
         }
 
         String signature = settingSignature();
-        String oreSignature = oreSettingSignature();
+        String targetSignature = targetSettingSignature();
         long now = System.currentTimeMillis();
-        if (!oreSignature.equals(lastOreSignature)) {
-            lastOreSignature = oreSignature;
-            targets = List.of();
+        if (!targetSignature.equals(lastTargetSignature)) {
+            lastTargetSignature = targetSignature;
+            oreTargets = List.of();
+            glassTargets = List.of();
             scanTask = null;
             lastScan = 0L;
         }
@@ -120,13 +117,12 @@ public class Xray extends Module {
 
     @EventHandler
     public void onRender3D(Render3DEvent event) {
-        if (!esp.isToggled() || !Utils.nullCheck()) {
-            return;
-        }
+        if (!esp.isToggled() || !Utils.nullCheck()) return;
 
         if (scannedLevel.get() != mc.level) {
             scannedLevel = new WeakReference<>(mc.level);
-            targets = List.of();
+            oreTargets = List.of();
+            glassTargets = List.of();
             scanTask = null;
             lastScan = 0L;
             lastRange = -1;
@@ -134,34 +130,27 @@ public class Xray extends Module {
 
         int range = (int) Math.round(distance.getInput());
         long now = System.currentTimeMillis();
-        if (scanTask != null && scanTask.range != range) {
-            scanTask = null;
-        }
+        if (scanTask != null && scanTask.range != range) scanTask = null;
         if (scanTask == null && (now - lastScan >= SCAN_INTERVAL_MS || range != lastRange)) {
-            scanTask = new ScanTask(mc.level, mc.player.getBlockX(), mc.player.getBlockY(),
-                    mc.player.getBlockZ(), range);
+            scanTask = new ScanTask(mc.level, mc.player.getBlockX(), mc.player.getBlockY(), mc.player.getBlockZ(), range);
         }
         if (scanTask != null && scanTask.step(mc.level, SCAN_BLOCK_BUDGET)) {
-            targets = scanTask.results();
+            oreTargets = scanTask.oreResults();
+            glassTargets = scanTask.glassResults();
             lastScan = now;
             lastRange = scanTask.range;
             scanTask = null;
         }
 
-        if (boxBuffer == null) {
-            boxBuffer = BufferSource.reusable();
+        if (boxBuffer == null) boxBuffer = BufferSource.reusable();
+        if (ore.isToggled()) {
+            RenderUtils.drawBoxes(boxBuffer, event.getMatrix(), oreTargets, 0.0f,
+                    1.0f, 3.0f, false, true, false);
         }
-        RenderUtils.drawBoxes(
-                boxBuffer,
-                event.getMatrix(),
-                targets,
-                opacityAlpha() / 255.0f,
-                230.0f / 255.0f,
-                2.0f,
-                true,
-                outline.isToggled(),
-                false
-        );
+        if (glass.isToggled()) {
+            RenderUtils.drawBoxes(boxBuffer, event.getMatrix(), glassTargets, 0.35f,
+                    0.0f, 1.0f, true, false, false);
+        }
     }
 
     public static boolean isActive() {
@@ -169,7 +158,7 @@ public class Xray extends Module {
     }
 
     public static boolean shouldShowBlock(BlockState state) {
-        return state != null && isActive() && ModuleManager.xray.oreFor(state.getBlock()) != null;
+        return state != null && isActive() && ModuleManager.xray.isVisible(state.getBlock());
     }
 
     public static boolean shouldTransparentBlock(BlockState state) {
@@ -177,62 +166,80 @@ public class Xray extends Module {
     }
 
     public static int transparentAlphaFor(BlockState state) {
-        return shouldTransparentBlock(state) ? ModuleManager.xray.opacityAlpha() : -1;
+        if (!shouldTransparentBlock(state)) return -1;
+        Xray xray = ModuleManager.xray;
+        return xray.opacityAlpha();
     }
 
-    public static void prepareQuad(BlockState state, QuadInstance quad) {
-        TRANSLUCENT_LAYER.set(Boolean.FALSE);
-        if (quad == null) {
-            return;
-        }
-
-        int alpha = transparentAlphaFor(state);
-        if (alpha < 0) {
-            return;
-        }
-
-        TRANSLUCENT_LAYER.set(Boolean.TRUE);
-        for (int i = 0; i < 4; i++) {
-            quad.setColor(i, alpha << 24 | quad.getColor(i) & 0x00FFFFFF);
-        }
+    public static boolean isOpacityMode() {
+        return isActive() && ModuleManager.xray.opacityAlpha() > 0 && ModuleManager.xray.opacityAlpha() < 255;
     }
 
-    public static boolean useTranslucentLayer() {
-        return TRANSLUCENT_LAYER.get();
+    public static int opacityColorMask() {
+        return ModuleManager.xray.opacityAlpha() << 24 | 0x00FFFFFF;
     }
 
-    public static void clearLayerOverride() {
-        TRANSLUCENT_LAYER.set(Boolean.FALSE);
+    public static float opacityFloat() {
+        return ModuleManager.xray.opacityAlpha() / 255.0f;
+    }
+
+    public Boolean shouldDrawSide(BlockState state, BlockPos pos) {
+        if (!isEnabled()) return null;
+
+        boolean visible = isVisible(state.getBlock());
+        if (!visible && isOpacityMode()) return null;
+        return visible;
+    }
+
+    public boolean shouldHideBlockEntity(BlockEntityRenderState state) {
+        return isEnabled() && mc.level != null && !isVisible(mc.level.getBlockState(state.blockPos).getBlock());
+    }
+
+    public boolean isVisible(Block block) {
+        return ore.isToggled() && oreFor(block) != null || glass.isToggled() && glassColorFor(block) != null;
+    }
+
+    @EventHandler
+    public void onChunkOcclusion(ChunkOcclusionEvent event) {
+        if (isEnabled()) event.cancel();
     }
 
     private Ore oreFor(Block block) {
-        if (block == Blocks.POLISHED_DIORITE) {
-            return polishedDiorite.isToggled() ? Ore.POLISHED_DIORITE : null;
-        }
+        if (block == Blocks.POLISHED_DIORITE) return Ore.POLISHED_DIORITE;
         return null;
     }
 
+    private Color glassColorFor(Block block) {
+        String path = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        return switch (path.replace("_stained_glass_pane", "").replace("_stained_glass", "")) {
+            case "white" -> new Color(0xF9FFFE);
+            case "orange" -> new Color(0xF9801D);
+            case "magenta" -> new Color(0xC74EBD);
+            case "light_blue" -> new Color(0x3AB3DA);
+            case "yellow" -> new Color(0xFED83D);
+            case "lime" -> new Color(0x80C71F);
+            case "pink" -> new Color(0xF38BAA);
+            case "gray" -> new Color(0x474F52);
+            case "light_gray" -> new Color(0x9D9D97);
+            case "cyan" -> new Color(0x169C9C);
+            case "purple" -> new Color(0x8932B8);
+            case "blue" -> new Color(0x3C44AA);
+            case "brown" -> new Color(0x835432);
+            case "green" -> new Color(0x5E7C16);
+            case "red" -> new Color(0xB02E26);
+            case "black" -> new Color(0x1D1D21);
+            default -> null;
+        };
+    }
+
     private int opacityAlpha() {
-        return Math.clamp((int) Math.round(opacity.getInput()), 10, 255);
+        return Math.clamp((int) Math.round(opacity.getInput() * 2.55), 0, 255);
     }
-
-    private String settingSignature() {
-        return opacityAlpha() + ":" + oreSettingSignature();
-    }
-
-    private String oreSettingSignature() {
-        return String.valueOf(polishedDiorite.isToggled());
-    }
+    private String settingSignature() { return opacityAlpha() + ":" + targetSettingSignature(); }
+    private String targetSettingSignature() { return ore.isToggled() + ":" + glass.isToggled(); }
 
     private void reloadWorldRenderer() {
-        if (mc.level != null && mc.levelRenderer != null) {
-            mc.levelRenderer.invalidateCompiledGeometry(
-                    mc.level,
-                    mc.options,
-                    mc.gameRenderer.mainCamera(),
-                    mc.getBlockColors()
-            );
-        }
+        if (mc.level != null) mc.levelExtractor.allChanged();
     }
 
     private void closeBoxBuffer() {
@@ -243,62 +250,32 @@ public class Xray extends Module {
     }
 
     private final class ScanTask {
-        private final int centerX;
-        private final int centerY;
-        private final int centerZ;
-        private final int range;
-        private final int rangeSq;
-        private final int minZ;
-        private final int maxZ;
-        private final int worldMinY;
-        private final int worldMaxY;
+        private final int centerX, centerY, centerZ, range, rangeSq, minZ, maxZ, worldMinY, worldMaxY;
         private final BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-        private final ArrayList<RenderUtils.ColoredBox> found = new ArrayList<>();
-
-        private int nextX;
-        private int nextZ;
-        private int columnX;
-        private int columnZ;
-        private int nextY;
-        private int columnMaxY;
+        private final ArrayList<RenderUtils.ColoredBox> foundOres = new ArrayList<>();
+        private final ArrayList<RenderUtils.ColoredBox> foundGlass = new ArrayList<>();
+        private int nextX, nextZ, columnX, columnZ, nextY, columnMaxY;
         private boolean columnReady;
 
         private ScanTask(ClientLevel level, int centerX, int centerY, int centerZ, int range) {
-            this.centerX = centerX;
-            this.centerY = centerY;
-            this.centerZ = centerZ;
-            this.range = range;
-            this.rangeSq = range * range;
-            this.nextX = centerX - range;
-            this.minZ = centerZ - range;
-            this.maxZ = centerZ + range;
-            this.nextZ = minZ;
-            this.worldMinY = level.getMinY();
-            this.worldMaxY = level.getMaxY() - 1;
+            this.centerX = centerX; this.centerY = centerY; this.centerZ = centerZ; this.range = range; this.rangeSq = range * range;
+            nextX = centerX - range; minZ = centerZ - range; maxZ = centerZ + range; nextZ = minZ;
+            worldMinY = level.getMinY(); worldMaxY = level.getMaxY() - 1;
         }
 
         private boolean step(ClientLevel level, int budget) {
             int checked = 0;
             while (checked < budget) {
-                if (!columnReady && !prepareNextColumn(level)) {
-                    return true;
-                }
-
+                if (!columnReady && !prepareNextColumn(level)) return true;
                 cursor.set(columnX, nextY, columnZ);
-                Ore ore = oreFor(level.getBlockState(cursor).getBlock());
-                if (ore != null) {
-                    found.add(new RenderUtils.ColoredBox(
-                            new AABB(columnX, nextY, columnZ,
-                                    columnX + 1.0, nextY + 1.0, columnZ + 1.0),
-                            ore.color
-                    ));
-                }
-
+                Block block = level.getBlockState(cursor).getBlock();
+                AABB box = new AABB(columnX, nextY, columnZ, columnX + 1.0, nextY + 1.0, columnZ + 1.0);
+                Ore oreType = oreFor(block);
+                if (oreType != null) foundOres.add(new RenderUtils.ColoredBox(box, oreType.color));
+                Color glassColor = glassColorFor(block);
+                if (glassColor != null) foundGlass.add(new RenderUtils.ColoredBox(box, glassColor));
                 checked++;
-                nextY++;
-                if (nextY > columnMaxY) {
-                    columnReady = false;
-                }
+                if (++nextY > columnMaxY) columnReady = false;
             }
             return false;
         }
@@ -307,47 +284,28 @@ public class Xray extends Module {
             int maxX = centerX + range;
             while (nextX <= maxX) {
                 while (nextZ <= maxZ) {
-                    int z = nextZ++;
-                    int dx = nextX - centerX;
-                    int dz = z - centerZ;
+                    int z = nextZ++; int dx = nextX - centerX; int dz = z - centerZ;
                     int horizontalSq = dx * dx + dz * dz;
-                    if (horizontalSq > rangeSq || !level.hasChunk(nextX >> 4, z >> 4)) {
-                        continue;
-                    }
-
+                    if (horizontalSq > rangeSq || !level.hasChunk(nextX >> 4, z >> 4)) continue;
                     int verticalRange = (int) Math.sqrt(rangeSq - horizontalSq);
                     int minY = Math.max(worldMinY, centerY - verticalRange);
                     int maxY = Math.min(worldMaxY, centerY + verticalRange);
-                    if (minY > maxY) {
-                        continue;
-                    }
-
-                    columnX = nextX;
-                    columnZ = z;
-                    nextY = minY;
-                    columnMaxY = maxY;
-                    columnReady = true;
+                    if (minY > maxY) continue;
+                    columnX = nextX; columnZ = z; nextY = minY; columnMaxY = maxY; columnReady = true;
                     return true;
                 }
-
-                nextX++;
-                nextZ = minZ;
+                nextX++; nextZ = minZ;
             }
             return false;
         }
 
-        private List<RenderUtils.ColoredBox> results() {
-            return List.copyOf(found);
-        }
+        private List<RenderUtils.ColoredBox> oreResults() { return List.copyOf(foundOres); }
+        private List<RenderUtils.ColoredBox> glassResults() { return List.copyOf(foundGlass); }
     }
 
     private enum Ore {
         POLISHED_DIORITE(new Color(0xD8CDC7));
-
         private final Color color;
-
-        Ore(Color color) {
-            this.color = color;
-        }
+        Ore(Color color) { this.color = color; }
     }
 }
