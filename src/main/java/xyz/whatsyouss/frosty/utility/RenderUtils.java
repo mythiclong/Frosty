@@ -539,6 +539,16 @@ public class RenderUtils {
         bs.uploadAndDraw();
     }
 
+    public static void drawBoxes(PoseStack stack, Collection<ColoredBox> boxes,
+                                 float fillAlpha, float outlineAlpha, float lineWidth,
+                                 boolean drawFill, boolean drawOutline, boolean depthTest) {
+        if (boxes.isEmpty()) {
+            return;
+        }
+        drawBoxes(new BufferSource(), stack, boxes, fillAlpha, outlineAlpha, lineWidth,
+                drawFill, drawOutline, depthTest);
+    }
+
     private static void drawOutlinedBoxInternal(PoseStack matrices, VertexConsumer buffer, AABB box, int color, float lineWidth) {
         PoseStack.Pose entry = matrices.last();
         float x1 = (float) box.minX, y1 = (float) box.minY, z1 = (float) box.minZ;

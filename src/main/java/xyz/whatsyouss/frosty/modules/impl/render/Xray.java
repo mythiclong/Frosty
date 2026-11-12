@@ -53,7 +53,7 @@ public class Xray extends Module {
 
         this.registerSetting(distance = new SliderSetting("Distance", " blocks", 64, 16, 256, 4, "范围"));
         this.registerSetting(opacity = new SliderSetting("Opacity", "%", 10, 0, 99, 1, "透明度"));
-        this.registerSetting(ore = new ButtonSetting("Ore", "矿石", true));
+        this.registerSetting(ore = new ButtonSetting("Polished Diorite", "磨制闪长岩", true));
         this.registerSetting(glass = new ButtonSetting("Glass", "玻璃", true));
         this.registerSetting(esp = new ButtonSetting("ESP", "方块透视", true));
     }
@@ -205,16 +205,7 @@ public class Xray extends Module {
     }
 
     private Ore oreFor(Block block) {
-        if (block == Blocks.COAL_ORE || block == Blocks.DEEPSLATE_COAL_ORE) return Ore.COAL;
-        if (block == Blocks.REDSTONE_ORE || block == Blocks.DEEPSLATE_REDSTONE_ORE) return Ore.REDSTONE;
-        if (block == Blocks.IRON_ORE || block == Blocks.DEEPSLATE_IRON_ORE) return Ore.IRON;
-        if (block == Blocks.GOLD_ORE || block == Blocks.DEEPSLATE_GOLD_ORE || block == Blocks.NETHER_GOLD_ORE) return Ore.GOLD;
-        if (block == Blocks.DIAMOND_ORE || block == Blocks.DEEPSLATE_DIAMOND_ORE) return Ore.DIAMOND;
-        if (block == Blocks.EMERALD_ORE || block == Blocks.DEEPSLATE_EMERALD_ORE) return Ore.EMERALD;
-        if (block == Blocks.LAPIS_ORE || block == Blocks.DEEPSLATE_LAPIS_ORE) return Ore.LAPIS;
-        if (block == Blocks.COPPER_ORE || block == Blocks.DEEPSLATE_COPPER_ORE) return Ore.COPPER;
-        if (block == Blocks.ANCIENT_DEBRIS) return Ore.DEBRIS;
-        if (block == Blocks.NETHER_QUARTZ_ORE) return Ore.QUARTZ;
+        if (block == Blocks.POLISHED_DIORITE) return Ore.POLISHED_DIORITE;
         return null;
     }
 
@@ -313,9 +304,7 @@ public class Xray extends Module {
     }
 
     private enum Ore {
-        COAL(new Color(0x3B3B3B)), REDSTONE(new Color(0xFF3131)), IRON(new Color(0xD8B77E)),
-        GOLD(new Color(0xFFE45D)), DIAMOND(new Color(0x42E8FF)), EMERALD(new Color(0x37F06D)),
-        LAPIS(new Color(0x466CFF)), COPPER(new Color(0xF09254)), DEBRIS(new Color(0x8E5A46)), QUARTZ(new Color(0xECE6D4));
+        POLISHED_DIORITE(new Color(0xD8CDC7));
         private final Color color;
         Ore(Color color) { this.color = color; }
     }

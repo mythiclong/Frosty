@@ -11,8 +11,6 @@ import xyz.whatsyouss.frosty.utility.Utils;
 
 public class NoBreakReset extends Module {
 
-    private String holding;
-
     public NoBreakReset() {
         super("NoBreakReset", "无破坏重置", category.Mining);
     }
@@ -20,13 +18,25 @@ public class NoBreakReset extends Module {
     @EventHandler
     public void onReceivePacket(ReceivePacketEvent event) {
         if (event.getPacket() instanceof ClientboundContainerSetSlotPacket packet) {
-            ItemStack stack = packet.getItem();
-
-            if (!stack.isEmpty() && stack.getCustomName() != null) {
-                holding = Utils.getLiteralByText(Component.literal(stack.getCustomName().toString()));
+            // 只拦截玩家背包（containerId 0），避免影响箱子等容器界面
+            if (packet.getContainerId() != 0) {
+                return;
             }
 
-            if (stack.getItem() == Items.STONE_AXE && holding.contains("Fig") || stack.getItem() == Items.PRISMARINE_SHARD && holding.contains("Drill") || stack.getItem() == Items.DIAMOND_PICKAXE) {
+            ItemStack stack = packet.getItem();
+            if (stack.isEmpty()) {
+                return;
+            }
+
+            // 直接检查本包内物品的名字，不再缓存到字段（旧实现 holding 有 null 与残留问题）
+            Component customName = stack.getCustomName();
+            String name = customName != null
+                    ? Utils.getLiteralByText(Component.literal(customName.toString()))
+                    : "";
+
+            if (stack.getItem() == Items.STONE_AXE && name.contains("Fig")
+                    || stack.getItem() == Items.PRISMARINE_SHARD && name.contains("Drill")
+                    || stack.getItem() == Items.DIAMOND_PICKAXE) {
                 event.setCancelled(true);
             }
         }

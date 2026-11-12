@@ -44,6 +44,7 @@ public class ModuleManager {
     public static Sprint sprint;
     public static AntiDebuff antiDebuff;
     public static Fullbright fullbright;
+    public static Xray xray;
     public static NoHurtCam noHurtCam;
     public static AutoFish autoFish;
     public static LushlilacNuker lushlilacNuker;
@@ -103,7 +104,9 @@ public class ModuleManager {
     public static MurderMystery murderMystery;
     public static Nametags nametags;
     public static AntiTexture antiTexture;
-    public static Xray xray;
+    public static Chams chams;
+    public static AutoConversation autoConversation;
+    public static RatProtection ratProtection;
     public static WormLavaESP wormLavaESP;
     public static FarmingInfo farmingInfo;
 
@@ -120,6 +123,7 @@ public class ModuleManager {
         this.addModule(velocity = new Velocity());
         this.addModule(antiDebuff = new AntiDebuff());
         this.addModule(fullbright = new Fullbright());
+        this.addModule(xray = new Xray());
         this.addModule(noHurtCam = new NoHurtCam());
         this.addModule(autoFish = new AutoFish());
         this.addModule(lushlilacNuker = new LushlilacNuker());
@@ -129,6 +133,7 @@ public class ModuleManager {
         this.addModule(axolotlESP = new AxolotlESP());
         this.addModule(antiBot = new AntiBot());
         this.addModule(playerESP = new PlayerESP());
+        this.addModule(chams = new Chams());
         this.addModule(nametags = new Nametags());
         this.addModule(frozenTreasure = new FrozenTreasure());
         this.addModule(sandNuker = new SandNuker());
@@ -179,7 +184,8 @@ public class ModuleManager {
         this.addModule(autoGift = new AutoGift());
         this.addModule(murderMystery = new MurderMystery());
         this.addModule(antiTexture = new AntiTexture());
-        this.addModule(xray = new Xray());
+        this.addModule(autoConversation = new AutoConversation());
+        this.addModule(ratProtection = new RatProtection());
         this.addModule(wormLavaESP = new WormLavaESP());
         this.addModule(farmingInfo = new FarmingInfo());
         modules.sort(Comparator.comparing(Module::getName));
